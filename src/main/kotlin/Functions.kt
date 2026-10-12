@@ -253,3 +253,36 @@ fun getEndDateForPlannerScreen(): LocalDate {
 
     return endOfCurrentMonth
 }
+
+
+/**
+ * Finds a unique file name by adding "(number)" with an increasing number to the name until it is unique.
+ * @param desiredFileName String of the desired file name
+ * @param directory String if the unique file name is supposed to be searched in a directory, else null
+ * @return String of the unique file name
+ */
+fun findUniqueOutputFileName(desiredFileName: String, directory: String?): String {
+    var currentExtensionIndex = 0
+    val fileNameWithoutExtension = File(desiredFileName).nameWithoutExtension
+    val fileExtension = File(desiredFileName).extension
+    while (true) {
+        val uniqueAddon = if(currentExtensionIndex != 0) {
+            " ($currentExtensionIndex)"
+        } else {
+            ""
+        }
+
+        val directoryPrefix = if(directory != null) {
+            directory + "\\"
+        } else {
+            ""
+        }
+
+        val file = File("$directoryPrefix$fileNameWithoutExtension$uniqueAddon.$fileExtension")
+        if(!file.exists()) {
+            return file.name
+        }
+
+        currentExtensionIndex++
+    }
+}

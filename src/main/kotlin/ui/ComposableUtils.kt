@@ -5,6 +5,7 @@ import alex.handball.customToString
 import alex.handball.model.Fixture
 import alex.handball.normalizeTeamName
 import alex.handball.toJavaLocalDate
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,6 +23,7 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.SnackbarDuration
+import androidx.compose.material.Switch
 import androidx.compose.material.TabRowDefaults.Divider
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
@@ -209,7 +211,7 @@ fun dateRangeShowGamesSegment(
 @Composable
 fun RowScope.fixtureInfoHeader() {
     Text(
-        text = "Date",
+        text = "Datum",
         modifier = Modifier
             .fillMaxWidth(0.1F)
             .fillMaxHeight()
@@ -218,7 +220,7 @@ fun RowScope.fixtureInfoHeader() {
     )
 
     Text(
-        text = "Time",
+        text = "Zeit",
         modifier = Modifier
             .fillMaxWidth(0.085F)
             .fillMaxHeight()
@@ -227,7 +229,7 @@ fun RowScope.fixtureInfoHeader() {
     )
 
     Text(
-        text = "League",
+        text = "Liga",
         modifier = Modifier
             .fillMaxWidth(0.105F)
             .fillMaxHeight()
@@ -236,43 +238,30 @@ fun RowScope.fixtureInfoHeader() {
     )
 
     Text(
-        text = "Gym ID",
+        text = "H-Nr.",
         modifier = Modifier
             .fillMaxWidth(0.095F)
             .fillMaxHeight()
             .padding(end = 5.dp)
-            .align(Alignment.CenterVertically),
-        textAlign = TextAlign.Center
+            .align(Alignment.CenterVertically)
     )
 
     Text(
-        text = "Home Team",
+        text = "Heimmannschaft",
         modifier = Modifier
-            .fillMaxWidth(0.36F)
+            .fillMaxWidth(0.5F)
             .fillMaxHeight()
             .padding(end = 5.dp)
-            .align(Alignment.CenterVertically),
-        textAlign = TextAlign.Center
+            .align(Alignment.CenterVertically)
     )
 
     Text(
-        text = "Guest Team",
-        modifier = Modifier
-            .fillMaxWidth(0.525F)
-            .fillMaxHeight()
-            .padding(end = 5.dp)
-            .align(Alignment.CenterVertically),
-        textAlign = TextAlign.Center
-    )
-
-    Text(
-        text = "Planned Referees",
+        text = "Gastmannschaft",
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
             .padding(end = 5.dp)
-            .align(Alignment.CenterVertically),
-        textAlign = TextAlign.Center
+            .align(Alignment.CenterVertically)
     )
 }
 
@@ -299,7 +288,7 @@ fun RowScope.fixtureInfoLine(fixture: Fixture) {
     Text(
         text = fixture.date.customToString(),
         modifier = Modifier
-            .fillMaxWidth(0.09F)
+            .fillMaxWidth(0.1F)
             .fillMaxHeight()
             .padding(end = 5.dp)
             .align(Alignment.CenterVertically)
@@ -308,7 +297,7 @@ fun RowScope.fixtureInfoLine(fixture: Fixture) {
     Text(
         text = fixture.time,
         modifier = Modifier
-            .fillMaxWidth(0.07F)
+            .fillMaxWidth(0.085F)
             .fillMaxHeight()
             .padding(end = 5.dp)
             .align(Alignment.CenterVertically)
@@ -317,7 +306,7 @@ fun RowScope.fixtureInfoLine(fixture: Fixture) {
     Text(
         text = fixture.league.leagueName,
         modifier = Modifier
-            .fillMaxWidth(0.09F)
+            .fillMaxWidth(0.105F)
             .fillMaxHeight()
             .padding(end = 5.dp)
             .align(Alignment.CenterVertically)
@@ -326,7 +315,7 @@ fun RowScope.fixtureInfoLine(fixture: Fixture) {
     Text(
         text = fixture.gym.gymId,
         modifier = Modifier
-            .fillMaxWidth(0.08F)
+            .fillMaxWidth(0.095F)
             .fillMaxHeight()
             .padding(end = 5.dp)
             .align(Alignment.CenterVertically)
@@ -335,7 +324,7 @@ fun RowScope.fixtureInfoLine(fixture: Fixture) {
     Text(
         text = fixture.homeTeam.normalizeTeamName(),
         modifier = Modifier
-            .fillMaxWidth(0.3F)
+            .fillMaxWidth(0.5F)
             .fillMaxHeight()
             .padding(end = 5.dp)
             .align(Alignment.CenterVertically)
@@ -344,7 +333,7 @@ fun RowScope.fixtureInfoLine(fixture: Fixture) {
     Text(
         text = fixture.guestTeam.normalizeTeamName(),
         modifier = Modifier
-            .fillMaxWidth(0.4F)
+            .fillMaxWidth()
             .fillMaxHeight()
             .padding(end = 5.dp)
             .align(Alignment.CenterVertically)

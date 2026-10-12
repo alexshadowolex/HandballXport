@@ -8,7 +8,7 @@ import alex.handball.ui.navigation.NavController
 import alex.handball.ui.navigation.NavigationHost
 import alex.handball.ui.navigation.composable
 import alex.handball.ui.navigation.rememberNavController
-import alex.handball.ui.screens.exportPreparationScreen
+import alex.handball.ui.screens.exportScreen
 import alex.handball.ui.screens.homeScreen
 import alex.handball.ui.screens.leaguesListScreen
 import androidx.compose.desktop.ui.tooling.preview.Preview
@@ -24,7 +24,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
-import kotlin.isInitialized
 import kotlin.time.Duration.Companion.seconds
 
 val lightColorPalette = lightColors(
@@ -135,7 +134,7 @@ enum class Screen(
         icon = Icons.Filled.Home
     ),
 
-    ExportPreparationScreen(
+    ExportScreen(
         label = "Export",
         icon = Icons.Filled.DateRange
     ),
@@ -157,8 +156,8 @@ fun customNavigationHost(
             homeScreen()
         }
 
-        composable(Screen.ExportPreparationScreen.name) {
-            exportPreparationScreen(
+        composable(Screen.ExportScreen.name) {
+            exportScreen(
                 model
             )
         }

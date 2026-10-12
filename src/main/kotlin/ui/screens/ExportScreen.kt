@@ -1,9 +1,13 @@
 package alex.handball.ui.screens
 
 import alex.handball.Model
+import alex.handball.addQuotationMarks
 import alex.handball.backgroundCoroutineScope
+import alex.handball.config.AppConfig
 import alex.handball.customToString
 import alex.handball.getEndDateForPlannerScreen
+import alex.handball.handler.ExcelColumnIndices
+import alex.handball.handler.ExcelExportHandler
 import alex.handball.model.Fixture
 import alex.handball.model.League
 import alex.handball.model.LeaguesDatabase
@@ -39,7 +43,7 @@ private lateinit var toDate: MutableState<String>
 val isExcelExportGenerated = mutableStateOf(false)
 
 @Composable
-fun exportPreparationScreen(model: Model) {
+fun exportScreen(model: Model) {
     val scaffoldState = rememberScaffoldState()
     fromDate = remember { mutableStateOf(
         Clock.System.todayIn(TimeZone.currentSystemDefault()).toJavaLocalDate().customToString()
@@ -55,7 +59,7 @@ fun exportPreparationScreen(model: Model) {
                     .fillMaxSize()
                     .padding(all = 15.dp)
             ) {
-                screenHeaderRow(headline = "Games Planner")
+                screenHeaderRow(headline = "Export")
 
                 Spacer(
                     modifier = Modifier
@@ -67,6 +71,7 @@ fun exportPreparationScreen(model: Model) {
                     toDate,
                     scaffoldState,
                     onShowClick = { parsedFromDate, parsedToDate ->
+                        displayedFixtures.clear()
                         displayedFixtures.addAll(model.leaguesDatabase.getFixturesFromDateRange(
                             parsedFromDate,
                             parsedToDate
@@ -149,7 +154,7 @@ fun exportPreparationScreen(model: Model) {
                             .padding(start = 5.dp)
                     ) {
                         Button(
-                            onClick = {/*
+                            onClick = {
                                 val excelExportHandler = ExcelExportHandler(
                                     displayedFixtures,
                                     ExcelColumnIndices(
@@ -159,8 +164,7 @@ fun exportPreparationScreen(model: Model) {
                                         gameNumberIndex = 3,
                                         homeTeamIndex = 4,
                                         guestTeamIndex = 5,
-                                        gymNameIndex = 6,
-                                        refereeClubIndex = 7,
+                                        gymNameIndex = 6
                                     ),
                                     headerNames = listOf(
                                         "Datum",
@@ -169,11 +173,10 @@ fun exportPreparationScreen(model: Model) {
                                         "SpNr",
                                         "Heim",
                                         "Gast",
-                                        "Halle",
-                                        "Schiedsrichter"
+                                        "Halle"
                                     )
                                 )
-                                val fileName = excelExportHandler.generateExcelExportOfPlan()
+                                val fileName = excelExportHandler.generateExcelExport()
                                 backgroundCoroutineScope.launch {
                                     scaffoldState.snackbarHostState.showSnackbar(
                                         message = if(fileName != null) {
@@ -186,28 +189,27 @@ fun exportPreparationScreen(model: Model) {
                                         duration = SnackbarDuration.Short
                                     )
                                 }
-                                */
                             },
                             modifier = Modifier
                                 .fillMaxWidth(),
                             enabled = displayedFixtures.isNotEmpty()
                         ) {
-                            Text("Export Plan to Excel")
+                            Text("Exportiere Spiele nach Excel")
                         }
                     }
 
                     Column(
                         modifier = Modifier
-                            .fillMaxWidth(0.6F)
+                            .fillMaxWidth(0.7F)
                             .padding(start = 5.dp)
                             .align(Alignment.CenterVertically)
                     ) {
                         if(isExcelExportGenerated.value) {
                             Text(
                                 style = MaterialTheme.typography.body1,
-                                text = "Open Folder to Last Excel Export",
+                                text = "Öffne Ordner zum letzten generierten Excel Export",
                                 modifier = Modifier
-                                    .clickable {/*
+                                    .clickable {
                                         backgroundCoroutineScope.launch {
                                             if (AppConfig.lastGeneratedExcelExportName.isNotEmpty()) {
                                                 Runtime.getRuntime().exec(
@@ -217,7 +219,7 @@ fun exportPreparationScreen(model: Model) {
                                                             AppConfig.lastGeneratedExcelExportName
                                                 )
                                             }
-                                        }*/
+                                        }
                                     }
                                     .pointerHoverIcon(PointerIcon.Hand),
                                 textDecoration = TextDecoration.Underline,
@@ -345,9 +347,15 @@ private fun fixtureDisplayRow(
             }
         })
 
-        fixtureInfoLine(fixture)
+        Row (
+            modifier = Modifier
+                .fillMaxWidth(0.88f)
+                .align(Alignment.CenterVertically)
+        ) {
+            fixtureInfoLine(fixture)
+        }
 
-        //lockFixtureSuggestionChangeSwitch(fixture)
+        lockFixtureSuggestionChangeSwitch()
     }
 }
 
@@ -379,6 +387,52 @@ fun addFixturesOfLeagueToUi(league: League, leaguesDatabase: LeaguesDatabase) {
     allFixtures.forEachIndexed { index, fixture ->
         if(!displayedFixtures.contains(fixture) && fixture.league == league) {
             displayedFixtures.add(index, fixture)
+        }
+    }
+}
+
+
+@Composable
+private fun lockFixtureSuggestionChangeSwitch() {
+    Column (
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 5.dp)
+    ) {
+        val isFixtureLocked = mutableStateOf(false)
+        Row (
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            Column (
+                modifier = Modifier
+                    .align(Alignment.CenterVertically)
+            ) {
+                Text(
+                    text = if (isFixtureLocked.value) {
+                        "Locked"
+                    } else {
+                        "Not Locked"
+                    },
+                    modifier = Modifier
+                        .align(Alignment.Start)
+                )
+            }
+
+            Column (
+                modifier = Modifier
+                    .align(Alignment.CenterVertically)
+                    .fillMaxWidth()
+            ) {
+                Switch(
+                    checked = isFixtureLocked.value,
+                    onCheckedChange = {
+                        isFixtureLocked.value = it
+                    },
+                    modifier = Modifier
+                        .align(Alignment.End)
+                )
+            }
         }
     }
 }
