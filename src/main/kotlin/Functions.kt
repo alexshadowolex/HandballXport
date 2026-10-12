@@ -21,7 +21,11 @@ import java.io.FileOutputStream
 import java.io.PrintStream
 import java.nio.file.Files
 import java.nio.file.Paths
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.YearMonth
 import java.time.format.DateTimeFormatterBuilder
+import java.time.temporal.TemporalAdjusters
 import kotlin.reflect.KClass
 import kotlin.system.exitProcess
 
@@ -218,4 +222,34 @@ suspend fun loadAll(gymHandler: GymHandler, leaguesDatabase: LeaguesDatabase) = 
         gymJob,
         leaguesJob
     )
+}
+
+
+/**
+ * Gets the date for the to-field in the planner UI. The date is depending on certain things:
+ * 1) If the month ends before next weekend, it takes the next months end
+ * 2) If the last saturday of the month is in the month before the month from the last sunday, it takes last sunday
+ * 3) Else: End of current month
+ * @return LocalDate of the specified date
+ */
+fun getEndDateForPlannerScreen(): LocalDate {
+    val now = LocalDate.now()
+    val endOfCurrentMonth = YearMonth.now().atEndOfMonth()
+    val nextSaturday = now.with(TemporalAdjusters.next(DayOfWeek.SATURDAY))
+    val nextSunday = now.with(TemporalAdjusters.next(DayOfWeek.SUNDAY))
+    val lastSaturday = now.with(TemporalAdjusters.lastInMonth(DayOfWeek.SATURDAY))
+    val lastSunday = now.with(TemporalAdjusters.lastInMonth(DayOfWeek.SUNDAY))
+
+    if(endOfCurrentMonth.month < nextSaturday.month || endOfCurrentMonth.month < nextSunday.month) {
+        return LocalDate.parse(
+            now.with(TemporalAdjusters.firstDayOfNextMonth())
+                .with(TemporalAdjusters.lastDayOfMonth()).toString()
+        )
+    }
+
+    if(lastSaturday.month < lastSunday.month) {
+        return LocalDate.parse(lastSunday.toString())
+    }
+
+    return endOfCurrentMonth
 }

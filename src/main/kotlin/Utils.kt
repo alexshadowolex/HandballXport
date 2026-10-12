@@ -53,3 +53,24 @@ fun String.toJavaLocalDate(): LocalDate? {
         null
     }
 }
+
+
+/**
+ * Adds quotation marks to the string. If the string is empty, it changes nothing.
+ */
+fun String.addQuotationMarks() =
+    if(this.isNotEmpty()) {
+        "\"$this\""
+    } else {
+        this
+    }
+
+
+/**
+ * Parses a java.time.LocalDate? to a string of pattern dd.MM.yyyy
+ * @return {String} of pattern dd.MM.yyyy on success, "" on failure
+ */
+fun LocalDate?.customToString() = this?.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")) ?: ""
+
+fun String.normalizeTeamName() = NameNormalizer.normalizeTeamName(this)
+fun String.normalizeGymName() = NameNormalizer.normalizeGymName(this)

@@ -13,6 +13,7 @@ import java.time.LocalDate
 import kotlinx.serialization.Serializable
 import org.jsoup.nodes.Element
 import java.io.File
+import kotlin.collections.iterator
 
 
 class LeaguesDatabase(private val gymHandler: GymHandler) {
@@ -41,6 +42,10 @@ class LeaguesDatabase(private val gymHandler: GymHandler) {
         leaguesToFixtures.clear()
         val leaguesToUnparsedHtmlFixtures = readDataFromHandballNet()
         parseHtmlToLeaguesWithFixtures(leaguesToUnparsedHtmlFixtures)
+
+        logger.error("leagues: ${leaguesToFixtures.map { 
+            "${it.key.leagueName} ${it.value.size}"
+        }.joinToString("|")}")
 
         logger.info("Following Leagues have no fixtures: ${
             leaguesToFixtures
@@ -230,7 +235,25 @@ class LeaguesDatabase(private val gymHandler: GymHandler) {
     }
 
 
-    // getFixturesFromDateRange
+    fun getFixturesFromDateRange(fromDate: LocalDate, toDate: LocalDate): List<Fixture> {
+        val leaguesAndTheirGames = mutableListOf<Fixture>()
+        for(entry in leaguesToFixtures) {
+            val currentLeaguesFixtures = entry.value.filter {
+                ((it.date ?: "01.01.1900".toJavaLocalDate())!! >= fromDate) &&
+                        ((it.date ?: "01.01.1900".toJavaLocalDate())!! <= toDate)
+            }
+
+            if(currentLeaguesFixtures.isNotEmpty()) {
+                leaguesAndTheirGames.addAll(currentLeaguesFixtures)
+            }
+        }
+
+        return leaguesAndTheirGames.sortedWith(compareBy(
+            {it.date},
+            {it.gym.gymId},
+            {it.time}
+        ))
+    }
 }
 
 @Serializable

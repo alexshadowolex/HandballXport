@@ -1,12 +1,14 @@
 package alex.handball.ui
 
 import alex.handball.Application
+import alex.handball.Handler
 import alex.handball.Model
 import alex.handball.isWindowsInDarkMode
 import alex.handball.ui.navigation.NavController
 import alex.handball.ui.navigation.NavigationHost
 import alex.handball.ui.navigation.composable
 import alex.handball.ui.navigation.rememberNavController
+import alex.handball.ui.screens.exportPreparationScreen
 import alex.handball.ui.screens.homeScreen
 import alex.handball.ui.screens.leaguesListScreen
 import androidx.compose.desktop.ui.tooling.preview.Preview
@@ -14,6 +16,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -110,7 +113,8 @@ fun app(application: Application) {
                         ) {
                             customNavigationHost(
                                 navController = navController,
-                                model = model
+                                model = model,
+                                handler = handler
                             )
                         }
                     }
@@ -131,20 +135,32 @@ enum class Screen(
         icon = Icons.Filled.Home
     ),
 
+    ExportPreparationScreen(
+        label = "Export",
+        icon = Icons.Filled.DateRange
+    ),
+
     LeaguesListScreen(
         label = "Ligenliste",
         icon = Icons.AutoMirrored.Filled.List
-    ),
+    )
 }
 
 @Composable
 fun customNavigationHost(
     navController: NavController,
-    model: Model
+    model: Model,
+    handler: Handler
 ) {
     NavigationHost(navController) {
         composable(Screen.HomeScreen.name) {
             homeScreen()
+        }
+
+        composable(Screen.ExportPreparationScreen.name) {
+            exportPreparationScreen(
+                model
+            )
         }
 
         composable(Screen.LeaguesListScreen.name) {
