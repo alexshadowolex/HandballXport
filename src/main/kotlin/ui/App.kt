@@ -1,5 +1,6 @@
 package alex.handball.ui
 
+import alex.handball.Application
 import alex.handball.isWindowsInDarkMode
 import alex.handball.ui.navigation.NavController
 import alex.handball.ui.navigation.NavigationHost
@@ -37,7 +38,7 @@ val darkColorPalette = darkColors(
 
 @Composable
 @Preview
-fun app() {
+fun app(application: Application) {
 
     var isInDarkMode by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
