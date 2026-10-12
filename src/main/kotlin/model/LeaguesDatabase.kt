@@ -89,7 +89,7 @@ class LeaguesDatabase(private val gymHandler: GymHandler) {
      */
     private fun parseHtmlToLeaguesWithFixtures(
         leaguesToUnparsedHtmlFixtures: MutableMap<League, List<Element>>
-    ): MutableMap<League, List<Fixture>> {
+    ) {
 
         for(currentLeagueWithUnparsedHtmlFixtures in leaguesToUnparsedHtmlFixtures) {
             val league = currentLeagueWithUnparsedHtmlFixtures.key
@@ -97,8 +97,6 @@ class LeaguesDatabase(private val gymHandler: GymHandler) {
             val fixtures = parseHtmlElements(htmlFixtures, league)
             leaguesToFixtures[league] = fixtures
         }
-
-        return leaguesToFixtures
     }
 
 
@@ -251,6 +249,6 @@ data class Fixture(
 data class League(
     val leagueLink: String,
     val leagueName: String,
-    val isNuLigaLeague: Boolean = false,
+    val isNuLigaLeague: Boolean,
     val distinguishingLeagueNameSubstring: String?
 )

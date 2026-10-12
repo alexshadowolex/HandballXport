@@ -32,10 +32,10 @@ fun leaguesListScreen(
     var newLeagueName by remember { mutableStateOf("") }
     var newLeagueDistinguishingNameSubstring by remember { mutableStateOf("") }
     var newLeagueLink by remember { mutableStateOf("") }
-    val labelPlanLeague = "Plan"
-    val labelNoPlanLeague = "Not Plan"
+    val labelNuLiga = "NuLiga"
+    val labelHandballNet = "Handball.net"
 
-    var newLeaguePlanLeague by remember { mutableStateOf(labelPlanLeague) }
+    var newLeagueNuLigaLeague by remember { mutableStateOf(labelNuLiga) }
 
     val scaffoldState = rememberScaffoldState()
     leaguesStateList = leaguesDatabase.leagues.toMutableStateList()
@@ -48,7 +48,7 @@ fun leaguesListScreen(
                 modifier = Modifier
                     .padding(all = 15.dp)
             ) {
-                screenHeaderRow(headline = "League List Editor")
+                screenHeaderRow(headline = "Ligen Editor")
 
                 Spacer(
                     modifier = Modifier
@@ -58,7 +58,7 @@ fun leaguesListScreen(
                 Row {
                     Column {
                         Text(
-                            text = "Add new League",
+                            text = "Neue Liga hinzufügen",
                         )
                     }
                 }
@@ -79,7 +79,7 @@ fun leaguesListScreen(
                                     label = {
                                         Text(
                                             color = MaterialTheme.colors.onPrimary,
-                                            text = "League Name (short)"
+                                            text = "Liga Name (kurz)"
                                         )
                                     },
                                     value = newLeagueName,
@@ -98,13 +98,13 @@ fun leaguesListScreen(
                             Column {
                                 Row {
                                     RadioButton(
-                                        selected = newLeaguePlanLeague == labelPlanLeague,
+                                        selected = newLeagueNuLigaLeague == labelNuLiga,
                                         onClick = {
-                                            newLeaguePlanLeague = labelPlanLeague
+                                            newLeagueNuLigaLeague = labelNuLiga
                                         }
                                     )
                                     Text(
-                                        text = labelPlanLeague,
+                                        text = labelNuLiga,
                                         modifier = Modifier.align(Alignment.CenterVertically)
                                     )
                                 }
@@ -113,13 +113,13 @@ fun leaguesListScreen(
                             Column {
                                 Row {
                                     RadioButton(
-                                        selected = newLeaguePlanLeague == labelNoPlanLeague,
+                                        selected = newLeagueNuLigaLeague == labelHandballNet,
                                         onClick = {
-                                            newLeaguePlanLeague = labelNoPlanLeague
+                                            newLeagueNuLigaLeague = labelHandballNet
                                         }
                                     )
                                     Text(
-                                        text = labelNoPlanLeague,
+                                        text = labelHandballNet,
                                         modifier = Modifier.align(Alignment.CenterVertically)
                                     )
                                 }
@@ -134,7 +134,7 @@ fun leaguesListScreen(
                                     label = {
                                         Text(
                                             color = MaterialTheme.colors.onPrimary,
-                                            text = "Distinguishing League Name Substring (e.g. \"St. 1\")"
+                                            text = "Unterscheidungstext im Liganame (z.B. \"St. 1\")"
                                         )
                                     },
                                     value = newLeagueDistinguishingNameSubstring,
@@ -161,7 +161,7 @@ fun leaguesListScreen(
                                     label = {
                                         Text(
                                             color = MaterialTheme.colors.onPrimary,
-                                            text = "League Link handball.net"
+                                            text = "Liga Link handball.net/NuLiga"
                                         )
                                     },
                                     value = newLeagueLink,
@@ -189,12 +189,13 @@ fun leaguesListScreen(
                                         backgroundCoroutineScope.launch {
                                             val tmpLeagueName = newLeagueName
                                             val tmpLeagueDistinguishingNameSubstring = newLeagueDistinguishingNameSubstring.ifBlank { null }
-                                            val tmpLeaguePlanLeague = newLeaguePlanLeague == labelPlanLeague
+                                            val tmpIsNuLigaLeague = newLeagueNuLigaLeague == labelNuLiga
                                             val tmpLeagueLink = newLeagueLink
 
                                             val newLeague = League(
                                                 leagueLink = tmpLeagueLink,
                                                 leagueName = tmpLeagueName,
+                                                isNuLigaLeague = tmpIsNuLigaLeague,
                                                 distinguishingLeagueNameSubstring = tmpLeagueDistinguishingNameSubstring
                                             )
                                             leaguesDatabase.addLeagueToDatabase(newLeague)
@@ -206,7 +207,7 @@ fun leaguesListScreen(
 
                                             backgroundCoroutineScope.launch {
                                                 scaffoldState.snackbarHostState.showSnackbar(
-                                                    message = "League $tmpLeagueName was added to the list!",
+                                                    message = "Liga $tmpLeagueName wurde zur Liste hinzugefügt!",
                                                     duration = SnackbarDuration.Short
                                                 )
                                             }
@@ -224,7 +225,7 @@ fun leaguesListScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                 ) {
-                                    Text("Add To List")
+                                    Text("Zur Liste hinzufügen")
                                 }
                             }
                         }
@@ -269,7 +270,7 @@ private fun leagueList(
                 sectionDivider(thickness = 1.dp)
             }
         } else {
-            Text("None")
+            Text("Keine")
         }
     }
 
@@ -336,7 +337,7 @@ private fun leagueRow(
 
                         Row {
                             Text(
-                                text = "Plan League: false"
+                                text = "NuLiga Liga: ${league.isNuLigaLeague}"
                             )
                         }
 
@@ -344,7 +345,7 @@ private fun leagueRow(
 
                         Row {
                             Text(
-                                text = "Distinguishing League Name Substring: ${league.distinguishingLeagueNameSubstring ?: "<none>"}"
+                                text = "Unterscheidungstext im Liganame: ${league.distinguishingLeagueNameSubstring ?: "<keiner>"}"
                             )
                         }
                     }
@@ -361,7 +362,7 @@ private fun leagueRow(
 
                     backgroundCoroutineScope.launch {
                         scaffoldState.snackbarHostState.showSnackbar(
-                            message = "League ${league.leagueName} was removed from the list!",
+                            message = "Liga ${league.leagueName} wurde von der Liste enfernt!",
                             duration = SnackbarDuration.Short
                         )
                     }
@@ -378,7 +379,7 @@ private fun leagueRow(
                 .fillMaxWidth()
                 .align(Alignment.CenterVertically)
         ) {
-            Text("Remove")
+            Text("Entfernen")
         }
     }
 }
