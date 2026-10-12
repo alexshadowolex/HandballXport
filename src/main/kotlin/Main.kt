@@ -3,12 +3,15 @@ package alex.handball
 import alex.handball.handler.GymHandler
 import alex.handball.model.LeaguesDatabase
 import alex.handball.ui.app
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
 import java.io.PrintWriter
@@ -22,11 +25,17 @@ val json = Json {
     prettyPrint = true
 }
 
+val backgroundCoroutineScope = CoroutineScope(Dispatchers.IO)
+
 fun main() = try {
     application {
         setupLogging()
 
         val application = Application()
+
+        LaunchedEffect(Unit) {
+            application.initialize()
+        }
 
         Window(
             state = WindowState(

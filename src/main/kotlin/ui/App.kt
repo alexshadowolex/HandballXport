@@ -1,16 +1,19 @@
 package alex.handball.ui
 
 import alex.handball.Application
+import alex.handball.Model
 import alex.handball.isWindowsInDarkMode
 import alex.handball.ui.navigation.NavController
 import alex.handball.ui.navigation.NavigationHost
 import alex.handball.ui.navigation.composable
 import alex.handball.ui.navigation.rememberNavController
 import alex.handball.ui.screens.homeScreen
+import alex.handball.ui.screens.leaguesListScreen
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -18,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
+import kotlin.isInitialized
 import kotlin.time.Duration.Companion.seconds
 
 val lightColorPalette = lightColors(
@@ -39,6 +43,11 @@ val darkColorPalette = darkColors(
 @Composable
 @Preview
 fun app(application: Application) {
+    if (!application.isInitialized.value) {
+        return
+    }
+    val model = application.model
+    val handler = application.handler
 
     var isInDarkMode by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
@@ -100,7 +109,8 @@ fun app(application: Application) {
                                 .fillMaxSize()
                         ) {
                             customNavigationHost(
-                                navController = navController
+                                navController = navController,
+                                model = model
                             )
                         }
                     }
@@ -119,16 +129,28 @@ enum class Screen(
     HomeScreen(
         label = "Home",
         icon = Icons.Filled.Home
-    )
+    ),
+
+    LeaguesListScreen(
+        label = "Ligenliste",
+        icon = Icons.AutoMirrored.Filled.List
+    ),
 }
 
 @Composable
 fun customNavigationHost(
-    navController: NavController
+    navController: NavController,
+    model: Model
 ) {
     NavigationHost(navController) {
         composable(Screen.HomeScreen.name) {
             homeScreen()
+        }
+
+        composable(Screen.LeaguesListScreen.name) {
+            leaguesListScreen(
+                model.leaguesDatabase
+            )
         }
     }.build()
 }
