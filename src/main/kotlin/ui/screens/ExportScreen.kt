@@ -37,7 +37,7 @@ import kotlinx.datetime.toJavaLocalDate
 import kotlinx.datetime.todayIn
 import java.time.LocalDate
 
-private val displayedFixtures = mutableStateListOf<Fixture>()
+private val displayFixtures = mutableStateListOf<DisplayFixture>()
 private lateinit var fromDate: MutableState<String>
 private lateinit var toDate: MutableState<String>
 val isExcelExportGenerated = mutableStateOf(false)
@@ -71,11 +71,13 @@ fun exportScreen(model: Model) {
                     toDate,
                     scaffoldState,
                     onShowClick = { parsedFromDate, parsedToDate ->
-                        displayedFixtures.clear()
-                        displayedFixtures.addAll(model.leaguesDatabase.getFixturesFromDateRange(
+                        displayFixtures.clear()
+                        displayFixtures.addAll(model.leaguesDatabase.getFixturesFromDateRange(
                             parsedFromDate,
                             parsedToDate
-                        ))
+                        ).map {
+                            DisplayFixture(it)
+                        })
                     }
                 )
 
@@ -92,19 +94,19 @@ fun exportScreen(model: Model) {
                     ) {
                         Button(
                             onClick = {
+                                deleteAllMarkedDisplayFixtures()
                                 backgroundCoroutineScope.launch {
                                     scaffoldState.snackbarHostState.showSnackbar(
-                                        message = "Reset all unlocked games",
+                                        message = "Alle markierten Spiele wurden gelöscht",
                                         duration = SnackbarDuration.Short
                                     )
                                 }
                             },
                             modifier = Modifier
                                 .fillMaxWidth(),
-                            enabled = displayedFixtures.isNotEmpty()
+                            enabled = displayFixtures.isNotEmpty()
                         ) {
-                            // TODO delete all selected games
-                            Text("Reset all unlocked Games")
+                            Text("Lösche alle markierten Spiele")
                         }
                     }
 
@@ -115,30 +117,30 @@ fun exportScreen(model: Model) {
                     ) {
                         Row (
                             modifier = Modifier
-                                .fillMaxWidth(0.7F)
+                                .fillMaxWidth()
                                 .align(Alignment.End)
                         ) {
                             Button(
                                 onClick = {
-                                    //setAllLockedSwitchValues(isLocked = true)
+                                    setAllMarkedForDeletionSwitches(isMarkedForDeleting = true)
                                 },
                                 modifier = Modifier
-                                    .fillMaxWidth(0.4F),
-                                enabled = displayedFixtures.isNotEmpty()
+                                    .fillMaxWidth(0.5F),
+                                enabled = displayFixtures.isNotEmpty()
                             ) {
-                                Text("Lock All")
+                                Text("Setze alle Löschmarkierungen")
                             }
 
                             Button(
                                 onClick = {
-                                    //setAllLockedSwitchValues(isLocked = false)
+                                    setAllMarkedForDeletionSwitches(isMarkedForDeleting = false)
                                 },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(start = 2.dp),
-                                enabled = displayedFixtures.isNotEmpty()
+                                enabled = displayFixtures.isNotEmpty()
                             ) {
-                                Text("Unlock All")
+                                Text("Entferne alle Löschmarkierungen")
                             }
                         }
                     }
@@ -156,7 +158,7 @@ fun exportScreen(model: Model) {
                         Button(
                             onClick = {
                                 val excelExportHandler = ExcelExportHandler(
-                                    displayedFixtures,
+                                    displayFixtures.map { it.fixture },
                                     ExcelColumnIndices(
                                         dateIndex = 0,
                                         timeIndex = 1,
@@ -192,7 +194,7 @@ fun exportScreen(model: Model) {
                             },
                             modifier = Modifier
                                 .fillMaxWidth(),
-                            enabled = displayedFixtures.isNotEmpty()
+                            enabled = displayFixtures.isNotEmpty()
                         ) {
                             Text("Exportiere Spiele nach Excel")
                         }
@@ -252,7 +254,7 @@ private fun gamePlanList(
                 .fillMaxWidth(0.98F)
                 .fillMaxHeight()
         ) {
-            if (displayedFixtures.isNotEmpty()) {
+            if (displayFixtures.isNotEmpty()) {
                 Row (
                     modifier = Modifier
                         .padding(start = 30.dp, bottom = 5.dp)
@@ -266,7 +268,7 @@ private fun gamePlanList(
                     }
 
                     Text(
-                        text = "Delete?",
+                        text = "Löschen?",
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(end = 5.dp)
@@ -281,12 +283,11 @@ private fun gamePlanList(
                 )
 
                 var currentDate: LocalDate? = null
-                displayedFixtures.forEach { fixture ->
-
+                displayFixtures.forEach { displayFixture ->
                     if (currentDate != null) {
                         Divider(
                             color = MaterialTheme.colors.secondary,
-                            thickness = if (currentDate != fixture.date) {
+                            thickness = if (currentDate != displayFixture.fixture.date) {
                                 2.dp
                             } else {
                                 1.dp
@@ -295,11 +296,11 @@ private fun gamePlanList(
                     }
 
                     fixtureDisplayRow (
-                        fixture,
+                        displayFixture,
                         scaffoldState
                     )
 
-                    currentDate = fixture.date
+                    currentDate = displayFixture.fixture.date
                 }
             } else {
                 // TODO: Text should change depending on if we already searched
@@ -324,7 +325,7 @@ private fun gamePlanList(
 
 @Composable
 private fun fixtureDisplayRow(
-    fixture: Fixture,
+    displayFixture: DisplayFixture,
     scaffoldState: ScaffoldState
 ) {
     Row(
@@ -334,13 +335,13 @@ private fun fixtureDisplayRow(
     ) {
 
         deleteFixtureButton(onClick = {
-            displayedFixtures.remove(fixture)
+            displayFixtures.remove(displayFixture)
 
             backgroundCoroutineScope.launch {
                 scaffoldState.snackbarHostState.showSnackbar(
                     message = "Removed game " +
-                            "${fixture.homeTeam.normalizeTeamName()} vs. " +
-                            "${fixture.guestTeam.normalizeTeamName()} " +
+                            "${displayFixture.fixture.homeTeam.normalizeTeamName()} vs. " +
+                            "${displayFixture.fixture.guestTeam.normalizeTeamName()} " +
                             "from display list!",
                     duration = SnackbarDuration.Short
                 )
@@ -352,10 +353,10 @@ private fun fixtureDisplayRow(
                 .fillMaxWidth(0.88f)
                 .align(Alignment.CenterVertically)
         ) {
-            fixtureInfoLine(fixture)
+            fixtureInfoLine(displayFixture.fixture)
         }
 
-        lockFixtureSuggestionChangeSwitch()
+        markFixtureForDeleteSwitch(displayFixture)
     }
 }
 
@@ -364,14 +365,14 @@ private fun triggerRecomposition() {
     try {
         /*val lastElement = fixturePlanners.removeLast()
         fixturePlanners.add(lastElement)*/
-        displayedFixtures[0] = displayedFixtures[0].copy()
+        displayFixtures[0] = displayFixtures[0].copy()
     } catch (_: Exception) {
 
     }
 }
 
 fun removeFixturesOfLeagueFromUi(league: League) {
-    displayedFixtures.removeIf { it.league == league }
+    displayFixtures.removeIf { it.fixture.league == league }
 }
 
 
@@ -382,24 +383,34 @@ fun addFixturesOfLeagueToUi(league: League, leaguesDatabase: LeaguesDatabase) {
     if(parsedFromDate == null || parsedToDate == null) {
         return
     }
-    val allFixtures = leaguesDatabase.getFixturesFromDateRange(parsedFromDate, parsedToDate)
+    val allDisplayFixtures = leaguesDatabase.getFixturesFromDateRange(parsedFromDate, parsedToDate).map { DisplayFixture(it) }
 
-    allFixtures.forEachIndexed { index, fixture ->
-        if(!displayedFixtures.contains(fixture) && fixture.league == league) {
-            displayedFixtures.add(index, fixture)
+    allDisplayFixtures.forEachIndexed { index, displayFixture ->
+        if(!displayFixtures.contains(displayFixture) && displayFixture.fixture.league == league) {
+            displayFixtures.add(index, displayFixture)
         }
     }
 }
 
 
+fun deleteAllMarkedDisplayFixtures() {
+    displayFixtures.removeIf { it.isMarkedForDeleting.value }
+}
+
+fun setAllMarkedForDeletionSwitches(isMarkedForDeleting: Boolean) {
+    displayFixtures.forEach {
+        it.isMarkedForDeleting.value = isMarkedForDeleting
+    }
+}
+
 @Composable
-private fun lockFixtureSuggestionChangeSwitch() {
+private fun markFixtureForDeleteSwitch(displayFixture: DisplayFixture) {
     Column (
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 5.dp)
     ) {
-        val isFixtureLocked = mutableStateOf(false)
+        val isFixtureMarkedForDelete = mutableStateOf(displayFixture.isMarkedForDeleting.value)
         Row (
             modifier = Modifier
                 .fillMaxWidth()
@@ -409,10 +420,10 @@ private fun lockFixtureSuggestionChangeSwitch() {
                     .align(Alignment.CenterVertically)
             ) {
                 Text(
-                    text = if (isFixtureLocked.value) {
-                        "Locked"
+                    text = if (isFixtureMarkedForDelete.value) {
+                        "Ja"
                     } else {
-                        "Not Locked"
+                        "Nein"
                     },
                     modifier = Modifier
                         .align(Alignment.Start)
@@ -425,9 +436,10 @@ private fun lockFixtureSuggestionChangeSwitch() {
                     .fillMaxWidth()
             ) {
                 Switch(
-                    checked = isFixtureLocked.value,
+                    checked = isFixtureMarkedForDelete.value,
                     onCheckedChange = {
-                        isFixtureLocked.value = it
+                        isFixtureMarkedForDelete.value = it
+                        displayFixture.isMarkedForDeleting.value = it
                     },
                     modifier = Modifier
                         .align(Alignment.End)
@@ -436,3 +448,8 @@ private fun lockFixtureSuggestionChangeSwitch() {
         }
     }
 }
+
+data class DisplayFixture(
+    val fixture: Fixture,
+    var isMarkedForDeleting: MutableState<Boolean> = mutableStateOf(false)
+)

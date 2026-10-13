@@ -107,7 +107,7 @@ fun dateRangeShowGamesSegment(
 ) {
     Row {
         Text(
-            text = "Select Date Range",
+            text = "Wähle einen Datumsbereich aus",
             style = MaterialTheme.typography.h6
         )
     }
@@ -130,8 +130,11 @@ fun dateRangeShowGamesSegment(
                         label = {
                             Text(
                                 color = MaterialTheme.colors.onPrimary,
-                                text = "From Date"
+                                text = "Startdatum"
                             )
+                        },
+                        placeholder = {
+                            Text("Format: TT.MM.JJJJ")
                         },
                         value = fromDate.value,
                         onValueChange = { value ->
@@ -157,8 +160,11 @@ fun dateRangeShowGamesSegment(
                         label = {
                             Text(
                                 color = MaterialTheme.colors.onPrimary,
-                                text = "To Date"
+                                text = "Enddatum"
                             )
+                        },
+                        placeholder = {
+                            Text("Format: TT.MM.JJJJ")
                         },
                         value = toDate.value,
                         onValueChange = { value ->
@@ -189,7 +195,7 @@ fun dateRangeShowGamesSegment(
                     if(parsedFromDate == null || parsedToDate == null) {
                         backgroundCoroutineScope.launch {
                             scaffoldState.snackbarHostState.showSnackbar(
-                                message = "Error while parsing one of the dates.",
+                                message = "Fehler beim Übernehmen einer der Datumsangaben",
                                 duration = SnackbarDuration.Short
                             )
                         }
@@ -201,7 +207,7 @@ fun dateRangeShowGamesSegment(
                 modifier = Modifier
                     .fillMaxWidth()
             ) {
-                Text("Show Games")
+                Text("Zeige Spiele")
             }
         }
     }
