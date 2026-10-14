@@ -1,24 +1,14 @@
 package alex.handball.ui.screens
 
-import alex.handball.Model
-import alex.handball.addQuotationMarks
-import alex.handball.backgroundCoroutineScope
+import alex.handball.*
 import alex.handball.config.AppConfig
-import alex.handball.customToString
-import alex.handball.getEndDateForPlannerScreen
 import alex.handball.handler.ExcelColumnIndices
 import alex.handball.handler.ExcelExportHandler
 import alex.handball.model.Fixture
 import alex.handball.model.League
 import alex.handball.model.LeaguesDatabase
-import alex.handball.normalizeTeamName
-import alex.handball.toJavaLocalDate
-import alex.handball.ui.dateRangeShowGamesSegment
-import alex.handball.ui.deleteFixtureButton
-import alex.handball.ui.fixtureInfoHeader
-import alex.handball.ui.fixtureInfoLine
-import alex.handball.ui.screenHeaderRow
-import alex.handball.ui.sectionDivider
+import alex.handball.model.NameNormalizer
+import alex.handball.ui.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -44,6 +34,7 @@ val isExcelExportGenerated = mutableStateOf(false)
 
 @Composable
 fun exportScreen(model: Model) {
+    val nameNormalizer = model.nameNormalizer
     val scaffoldState = rememberScaffoldState()
     fromDate = remember { mutableStateOf(
         Clock.System.todayIn(TimeZone.currentSystemDefault()).toJavaLocalDate().customToString()
@@ -176,7 +167,8 @@ fun exportScreen(model: Model) {
                                         "Heim",
                                         "Gast",
                                         "Halle"
-                                    )
+                                    ),
+                                    nameNormalizer
                                 )
                                 val fileName = excelExportHandler.generateExcelExport()
                                 backgroundCoroutineScope.launch {
@@ -234,7 +226,7 @@ fun exportScreen(model: Model) {
 
                 sectionDivider(thickness = 3.dp)
 
-                gamePlanList(scaffoldState)
+                gamePlanList(scaffoldState, nameNormalizer)
             }
         }
     }
@@ -243,7 +235,8 @@ fun exportScreen(model: Model) {
 
 @Composable
 private fun gamePlanList(
-    scaffoldState: ScaffoldState
+    scaffoldState: ScaffoldState,
+    nameNormalizer: NameNormalizer
 ) {
     val scrollState = rememberScrollState(0)
     val scrollBarAdapter = rememberScrollbarAdapter(scrollState)
@@ -297,7 +290,8 @@ private fun gamePlanList(
 
                     fixtureDisplayRow (
                         displayFixture,
-                        scaffoldState
+                        scaffoldState,
+                        nameNormalizer
                     )
 
                     currentDate = displayFixture.fixture.date
@@ -326,7 +320,8 @@ private fun gamePlanList(
 @Composable
 private fun fixtureDisplayRow(
     displayFixture: DisplayFixture,
-    scaffoldState: ScaffoldState
+    scaffoldState: ScaffoldState,
+    nameNormalizer: NameNormalizer
 ) {
     Row(
         modifier = Modifier
@@ -340,8 +335,8 @@ private fun fixtureDisplayRow(
             backgroundCoroutineScope.launch {
                 scaffoldState.snackbarHostState.showSnackbar(
                     message = "Removed game " +
-                            "${displayFixture.fixture.homeTeam.normalizeTeamName()} vs. " +
-                            "${displayFixture.fixture.guestTeam.normalizeTeamName()} " +
+                            "${nameNormalizer.normalizeTeamName(displayFixture.fixture.homeTeam)} vs. " +
+                            "${nameNormalizer.normalizeTeamName(displayFixture.fixture.guestTeam)} " +
                             "from display list!",
                     duration = SnackbarDuration.Short
                 )
@@ -353,7 +348,7 @@ private fun fixtureDisplayRow(
                 .fillMaxWidth(0.88f)
                 .align(Alignment.CenterVertically)
         ) {
-            fixtureInfoLine(displayFixture.fixture)
+            fixtureInfoLine(displayFixture.fixture, nameNormalizer)
         }
 
         markFixtureForDeleteSwitch(displayFixture)

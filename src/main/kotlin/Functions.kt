@@ -3,6 +3,8 @@ package alex.handball
 import alex.handball.handler.GymHandler
 import alex.handball.model.League
 import alex.handball.model.LeaguesDatabase
+import alex.handball.model.SpecialGymName
+import alex.handball.model.SpecialTeamName
 import com.github.tkuenneth.nativeparameterstoreaccess.NativeParameterStoreAccess
 import com.github.tkuenneth.nativeparameterstoreaccess.WindowsRegistry
 import kotlinx.coroutines.Dispatchers
@@ -96,8 +98,10 @@ fun <T: Any> getSetDataFromJsonFile(dataFile: File, clazz: KClass<T>): MutableSe
         when(clazz) {
             String::class -> json.decodeFromString<MutableSet<String>>(dataFile.readText()) as MutableSet<T>
             League::class -> json.decodeFromString<MutableSet<League>>(dataFile.readText()) as MutableSet<T>
+            SpecialTeamName::class -> json.decodeFromString<MutableSet<SpecialTeamName>>(dataFile.readText()) as MutableSet<T>
+            SpecialGymName::class -> json.decodeFromString<MutableSet<SpecialGymName>>(dataFile.readText()) as MutableSet<T>
             else -> {
-                logger.error("Type $clazz was not defined in function getJsonDataFromFile, aborting.")
+                logger.error("Type $clazz was not defined in function getSetDataFromJsonFile, aborting.")
                 exitProcess(-1)
             }
         }

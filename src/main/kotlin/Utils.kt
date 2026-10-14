@@ -1,5 +1,6 @@
 package alex.handball
 
+import alex.handball.model.NameNormalizer
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializer
@@ -71,6 +72,3 @@ fun String.addQuotationMarks() =
  * @return {String} of pattern dd.MM.yyyy on success, "" on failure
  */
 fun LocalDate?.customToString() = this?.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")) ?: ""
-
-fun String.normalizeTeamName() = NameNormalizer.normalizeTeamName(this)
-fun String.normalizeGymName() = NameNormalizer.normalizeGymName(this)

@@ -2,6 +2,7 @@ package alex.handball
 
 import alex.handball.handler.GymHandler
 import alex.handball.model.LeaguesDatabase
+import alex.handball.model.NameNormalizer
 import androidx.compose.runtime.mutableStateOf
 
 class Application {
@@ -12,6 +13,9 @@ class Application {
         LeaguesDatabase(
             gymHandler
         )
+
+    private val nameNormalizer =
+        NameNormalizer()
 
     lateinit var model: Model
         private set
@@ -29,7 +33,8 @@ class Application {
         )
 
         model = Model(
-            leaguesDatabase = leaguesDatabase
+            leaguesDatabase = leaguesDatabase,
+            nameNormalizer = nameNormalizer
         )
 
         handler = Handler(

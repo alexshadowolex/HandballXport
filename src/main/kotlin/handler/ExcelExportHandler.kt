@@ -5,8 +5,7 @@ import alex.handball.config.AppConfig
 import alex.handball.findUniqueOutputFileName
 import alex.handball.logger
 import alex.handball.model.Fixture
-import alex.handball.normalizeGymName
-import alex.handball.normalizeTeamName
+import alex.handball.model.NameNormalizer
 import org.apache.poi.common.usermodel.HyperlinkType
 import org.apache.poi.hssf.usermodel.HSSFCellStyle
 import org.apache.poi.hssf.usermodel.HSSFFont
@@ -23,7 +22,8 @@ import java.time.format.DateTimeFormatter
 class ExcelExportHandler (
     private val fixtures: List<Fixture>,
     private val excelColumnIndices: ExcelColumnIndices,
-    private val headerNames: List<String>
+    private val headerNames: List<String>,
+    private val nameNormalizer: NameNormalizer
 ) {
     private val workbook = HSSFWorkbook()
     private val sheet = workbook.createSheet()
@@ -240,7 +240,7 @@ class ExcelExportHandler (
                             }
 
                             excelColumnIndices.homeTeamIndex -> {
-                                cellData = fixture.homeTeam.normalizeTeamName()
+                                cellData = nameNormalizer.normalizeTeamName(fixture.homeTeam)
                                 cellStyle = if(isFirstRowAfterHeader) {
                                     contentStyleFirstRowNotCenteredNotBold
                                 } else {
@@ -249,7 +249,7 @@ class ExcelExportHandler (
                             }
 
                             excelColumnIndices.guestTeamIndex -> {
-                                cellData = fixture.guestTeam.normalizeTeamName()
+                                cellData = nameNormalizer.normalizeTeamName(fixture.guestTeam)
                                 cellStyle = if(isFirstRowAfterHeader) {
                                     contentStyleFirstRowNotCenteredNotBold
                                 } else {
@@ -258,7 +258,7 @@ class ExcelExportHandler (
                             }
 
                             excelColumnIndices.gymNameIndex -> {
-                                cellData = fixture.gym.gymName.normalizeGymName()
+                                cellData = nameNormalizer.normalizeGymName(fixture.gym.gymName)
                                 if(fixture.gym != EMPTY_GYM) {
                                     val gymHyperLink = createHelper.createHyperlink(HyperlinkType.URL)
                                     gymHyperLink.address = fixture.gym.gymLink

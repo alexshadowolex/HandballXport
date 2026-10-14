@@ -2,6 +2,7 @@ package alex.handball
 
 import alex.handball.handler.GymHandler
 import alex.handball.model.LeaguesDatabase
+import alex.handball.model.NameNormalizer
 import alex.handball.ui.app
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.res.painterResource
@@ -65,7 +66,8 @@ fun main() = try {
 
 
 data class Model(
-    val leaguesDatabase: LeaguesDatabase
+    val leaguesDatabase: LeaguesDatabase,
+    val nameNormalizer: NameNormalizer
 )
 
 data class Handler(
