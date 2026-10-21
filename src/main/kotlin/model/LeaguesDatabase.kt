@@ -2,6 +2,7 @@ package alex.handball.model
 
 import alex.handball.LocalDateSerializer
 import alex.handball.getHtmlElementsFromHandballNet
+import alex.handball.getHtmlElementsFromNuLiga
 import alex.handball.getSetDataFromJsonFile
 import alex.handball.handler.EMPTY_GYM
 import alex.handball.handler.Gym
@@ -12,6 +13,7 @@ import alex.handball.toJavaLocalDate
 import java.time.LocalDate
 import kotlinx.serialization.Serializable
 import org.jsoup.nodes.Element
+import org.jsoup.select.Elements
 import java.io.File
 import kotlin.collections.iterator
 
@@ -40,7 +42,7 @@ class LeaguesDatabase(private val gymHandler: GymHandler) {
      */
     suspend fun initializeLoadingAllLeagueAndFixtureData() {
         leaguesToFixtures.clear()
-        val leaguesToUnparsedHtmlFixtures = readDataFromHandballNet()
+        val leaguesToUnparsedHtmlFixtures = readDataFromWebsites()
         parseHtmlToLeaguesWithFixtures(leaguesToUnparsedHtmlFixtures)
 
         logger.error("leagues: ${leaguesToFixtures.map { 
@@ -61,7 +63,7 @@ class LeaguesDatabase(private val gymHandler: GymHandler) {
      * Sole reading of the data from NuLiga
      * @return A map with the league is the key and the unparsed HTML as the value
      */
-    suspend fun readDataFromHandballNet(): MutableMap<League, List<Element>> {
+    suspend fun readDataFromWebsites(): MutableMap<League, List<Element>> {
         logger.info("Starting to read all leagues and fixtures data from handball.net")
 
         val leaguesToUnparsedHtmlFixtures = mutableMapOf<
@@ -69,20 +71,30 @@ class LeaguesDatabase(private val gymHandler: GymHandler) {
                 /*Unparsed HTML fixtures in that league*/ List<Element>
                 >()
 
-        val rootElementClassName = "matches-list matches-list--panel"
-        val elementCssQuery = "app-match-card"
+        val handballNetRootElementClassName = "matches-list matches-list--panel"
+        val handballNetElementCssQuery = "app-match-card"
 
         for(league in leagues) {
             val currentLink = league.leagueLink
 
-            val unparsedHtmlFixtures = getHtmlElementsFromHandballNet(currentLink, rootElementClassName, elementCssQuery)
+            val unparsedHtmlFixtures = if(league.isNuLigaLeague) {
+                getHtmlElementsFromNuLiga(
+                    currentLink
+                )
+            } else {
+                getHtmlElementsFromHandballNet(
+                    currentLink,
+                    handballNetRootElementClassName,
+                    handballNetElementCssQuery
+                )
+            }
 
             if (unparsedHtmlFixtures.isNotEmpty()) {
                 leaguesToUnparsedHtmlFixtures[league] = unparsedHtmlFixtures
             }
         }
 
-        logger.info("Finished reading all leagues and fixtures data from handball.net")
+        logger.info("Finished reading all leagues and fixtures data from websites")
         return leaguesToUnparsedHtmlFixtures
     }
 
@@ -99,7 +111,11 @@ class LeaguesDatabase(private val gymHandler: GymHandler) {
         for(currentLeagueWithUnparsedHtmlFixtures in leaguesToUnparsedHtmlFixtures) {
             val league = currentLeagueWithUnparsedHtmlFixtures.key
             val htmlFixtures = currentLeagueWithUnparsedHtmlFixtures.value
-            val fixtures = parseHtmlElements(htmlFixtures, league)
+            val fixtures = if(league.isNuLigaLeague) {
+                parseHtmlLines(htmlFixtures, league)
+            } else {
+                parseHtmlElementsFromHandballNet(htmlFixtures, league)
+            }
             leaguesToFixtures[league] = fixtures
         }
     }
@@ -113,7 +129,7 @@ class LeaguesDatabase(private val gymHandler: GymHandler) {
      * @param league The given league
      * @return A List of Fixtures for that league
      */
-    private fun parseHtmlElements(
+    private fun parseHtmlElementsFromHandballNet(
         htmlFixtures: List<Element>,
         league: League
     ): List<Fixture> {
@@ -209,6 +225,128 @@ class LeaguesDatabase(private val gymHandler: GymHandler) {
                 gameId = gameId
             )
         }
+    }
+
+    /**
+     * Parses the lines of a league's HTML to get a list of fixtures. The data in one line is
+     * encoded in <td>-tags
+     * @param htmlMatches The unparsed HTML
+     * @param league The given league
+     * @return A List of Fixtures for that league
+     */
+    private fun parseHtmlLines(htmlMatches: List<Element>, league: League): List<Fixture> {
+        var currentDate: LocalDate? = null
+        val currentMatches = mutableListOf<Fixture>()
+        for (currentHtmlMatch in htmlMatches) {
+            val informationColumns = currentHtmlMatch.select("td")
+
+            val newFixture = parseHtmlColumnsToGetGameData(informationColumns, league, currentDate) ?: continue
+            currentMatches.add(
+                newFixture
+            )
+
+            if(newFixture.date != currentDate) {
+                currentDate = newFixture.date
+            }
+        }
+
+        return currentMatches
+    }
+
+
+    /**
+     * Parses HTML columns to get the data of a single fixture
+     * @param informationColumns the unparsed HTML-columns
+     * @param league the given league
+     * @param lastDate the last read Date while parsing the lines of the league
+     * @return a single fixture or null, if the fixture was invalid
+     */
+    private fun parseHtmlColumnsToGetGameData(informationColumns: Elements, league: League, lastDate: LocalDate?): Fixture? {
+        val gameCanceledIndex = 0
+        val dateIndex = 1
+        val timeIndex = 2
+        val gymIdIndex = 3
+        val gameNumberIndex = 4
+        val homeTeamIndex = 5
+        val guestTeamIndex = 6
+        val gameCancelText = "Termin offen"
+        var adjustIndex = false
+
+        var currentDate: LocalDate? = null
+        var time = ""
+        var homeTeam = ""
+        var guestTeam = ""
+        var gymId = ""
+        var gymName = ""
+        var gymLink = ""
+        var gym: Gym? = null
+        var gameNumber = ""
+
+        informationColumns.forEachIndexed { index, currentInformationColumn ->
+            val data = currentInformationColumn.text().trim()
+            val adjustedIndex = if(adjustIndex) {
+                index + 1
+            } else {
+                index
+            }
+            when(adjustedIndex) {
+                gameCanceledIndex -> {
+                    if(data == gameCancelText) {
+                        adjustIndex = true
+                    }
+                }
+                dateIndex -> {
+                    if(data.isNotBlank()) {
+                        currentDate = try {
+                            data.toJavaLocalDate()
+                        } catch (e: Exception) {
+                            logger.error("Caught exception while parsing date $data: ", e)
+                            null
+                        }
+                    }
+                }
+                timeIndex -> time = data
+                gymIdIndex -> {
+                    gymId = data
+                    if(gymId.isNotEmpty()) {
+                        gymName = currentInformationColumn.select("span[title]").first()?.attr("title") ?: ""
+                        gymLink = currentInformationColumn.select("a[href]").first()?.attr("abs:href") ?: ""
+
+                        gym = gymHandler.getGymById(gymId) ?: Gym(gymId, gymName, gymLink)
+                    }
+                }
+                gameNumberIndex -> gameNumber = data
+                homeTeamIndex -> homeTeam = data
+                guestTeamIndex -> guestTeam = data
+            }
+        }
+
+        if(homeTeam.isEmpty() || guestTeam.isEmpty() || gymId.isEmpty() || time.isEmpty() || gameNumber.isEmpty() || gym == null) {
+            return null
+        }
+
+        if(homeTeam == "spielfrei" || guestTeam == "spielfrei") {
+            return null
+        }
+
+        if(currentDate == null) {
+            currentDate = lastDate
+        }
+
+        if(gymHandler.getGymById(gym.gymId) == null) {
+            logger.info("Following gym of fixture was not party of the gym-list and was manually added: $gym")
+            gymHandler.addGym(gym)
+        }
+
+        return Fixture(
+            currentDate,
+            time,
+            league,
+            homeTeam,
+            guestTeam,
+            gym,
+            gameNumber
+        )
     }
 
 

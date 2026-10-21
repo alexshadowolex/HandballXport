@@ -21,6 +21,7 @@ import org.jsoup.nodes.Element
 import java.io.File
 import java.io.FileOutputStream
 import java.io.PrintStream
+import java.net.ConnectException
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.DayOfWeek
@@ -165,6 +166,43 @@ suspend fun getHtmlElementsFromHandballNet(
         .forEach { result.addAll(it) }
 
     result
+}
+
+
+/**
+ * Connects to the given link and gets the HTML of it. The list of the table data
+ * is encoded in <tr>-elements. The first element is the table's header, which gets dropped.
+ * @param link Link to the NuLiga page (e.g. of a league with the total List of its matches)
+ * @return String of the prepared HTML for the further parsing process. Null, if an error occurred
+ */
+fun getHtmlElementsFromNuLiga(link: String): List<Element> {
+    val maximumAmountReconnectTries = 10
+    var result: List<Element>?
+    var i = 0
+
+    do {
+        result = try {
+            val document = Jsoup.connect(link).get()
+            if(document.head().select("title").first()?.text() == "nuLiga (c) nu Datenautomaten GmbH") {
+                throw ConnectException("No valid site found")
+            }
+            document.select("tbody").first()
+                ?.select("tr")?.drop(1)
+        } catch (e: Exception) {
+            logger.warn("Caught exception while reading from url $link: ", e)
+            if(i != maximumAmountReconnectTries - 1) {
+                logger.info("Starting reconnect attempt ${i + 1}")
+            }
+            null
+        }
+        i++
+    } while (i < maximumAmountReconnectTries && result == null)
+
+    if(result == null) {
+        logger.warn("After $maximumAmountReconnectTries attempts aborted connecting to link $link.")
+        result = listOf()
+    }
+    return result
 }
 
 private suspend fun loadDocumentWithRetry(

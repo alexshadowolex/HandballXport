@@ -213,7 +213,10 @@ class ExcelExportHandler (
                             }
 
                             excelColumnIndices.timeIndex -> {
-                                cellData = fixture.time.replace(" v", "").replace(" h", "")
+                                cellData = fixture.time
+                                    .replace(" v", "")
+                                    .replace(" h", "")
+                                    .replace("t/v", "")
                                 cellStyle = if(isFirstRowAfterHeader) {
                                     contentStyleFirstRowCenteredNotBold
                                 } else {

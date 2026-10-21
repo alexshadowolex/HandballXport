@@ -41,6 +41,14 @@ class NameNormalizer {
         specialGymNames = getSetDataFromJsonFile(specialGymNamesSaveFile, SpecialGymName::class).toMutableSet()
     }
 
+    /*
+    fun removeMatchedTeamFromClub(team: String, club: String) {
+        val tmpList = teamsMatchedToClub
+        tmpList.find { it.club == club }?.teams?.remove(team)
+
+        teamsMatchedToClub = tmpList
+    }*/
+
     private val romanNumerals = setOf(
         "I",
         "II",
