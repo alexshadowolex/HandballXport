@@ -280,7 +280,7 @@ class LeaguesDatabase(private val gymHandler: GymHandler) {
         var gymName = ""
         var gymLink = ""
         var gym: Gym? = null
-        var gameNumber = ""
+        var gameId = ""
 
         informationColumns.forEachIndexed { index, currentInformationColumn ->
             val data = currentInformationColumn.text().trim()
@@ -315,13 +315,13 @@ class LeaguesDatabase(private val gymHandler: GymHandler) {
                         gym = gymHandler.getGymById(gymId) ?: Gym(gymId, gymName, gymLink)
                     }
                 }
-                gameNumberIndex -> gameNumber = data
+                gameNumberIndex -> gameId = data
                 homeTeamIndex -> homeTeam = data
                 guestTeamIndex -> guestTeam = data
             }
         }
 
-        if(homeTeam.isEmpty() || guestTeam.isEmpty() || gymId.isEmpty() || time.isEmpty() || gameNumber.isEmpty() || gym == null) {
+        if(homeTeam.isEmpty() || guestTeam.isEmpty() || gymId.isEmpty() || time.isEmpty() || gameId.isEmpty() || gym == null) {
             return null
         }
 
@@ -345,7 +345,7 @@ class LeaguesDatabase(private val gymHandler: GymHandler) {
             homeTeam,
             guestTeam,
             gym,
-            gameNumber
+            gameId
         )
     }
 

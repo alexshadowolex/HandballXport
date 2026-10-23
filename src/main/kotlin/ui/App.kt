@@ -11,6 +11,7 @@ import alex.handball.ui.navigation.rememberNavController
 import alex.handball.ui.screens.exportScreen
 import alex.handball.ui.screens.homeScreen
 import alex.handball.ui.screens.leaguesListScreen
+import alex.handball.ui.screens.nameNormalizerScreen
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -142,6 +143,11 @@ enum class Screen(
     LeaguesListScreen(
         label = "Ligenliste",
         icon = Icons.AutoMirrored.Filled.List
+    ),
+
+    NameNormalizerScreen(
+        label = "Namen- normalizierer",
+        icon = Icons.AutoMirrored.Filled.List
     )
 }
 
@@ -165,6 +171,12 @@ fun customNavigationHost(
         composable(Screen.LeaguesListScreen.name) {
             leaguesListScreen(
                 model.leaguesDatabase
+            )
+        }
+
+        composable(Screen.NameNormalizerScreen.name) {
+            nameNormalizerScreen(
+                model.nameNormalizer
             )
         }
     }.build()
