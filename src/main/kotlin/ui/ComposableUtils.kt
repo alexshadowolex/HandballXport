@@ -73,6 +73,23 @@ fun sectionDivider(thickness: Dp) {
     )
 }
 
+/**
+ * Displays a vertical divider used to visually separate columns or side-by-side content.
+ *
+ * The divider fills the available height, applies vertical padding,
+ * and uses the primary theme color.
+ */
+@Composable
+fun columnDivider() {
+    Divider(
+        modifier = Modifier
+            .fillMaxHeight()
+            .padding(top = 5.dp, bottom = 5.dp)
+            .width(2.dp),
+        color = MaterialTheme.colors.primary
+    )
+}
+
 
 @Composable
 fun dateRangeShowGamesSegment(

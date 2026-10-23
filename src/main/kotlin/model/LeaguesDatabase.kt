@@ -334,7 +334,7 @@ class LeaguesDatabase(private val gymHandler: GymHandler) {
         }
 
         if(gymHandler.getGymById(gym.gymId) == null) {
-            logger.info("Following gym of fixture was not party of the gym-list and was manually added: $gym")
+            logger.info("Following gym of fixture was not part of the gym-list and was manually added: $gym")
             gymHandler.addGym(gym)
         }
 
