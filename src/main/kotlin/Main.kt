@@ -40,7 +40,7 @@ fun main() = try {
 
         Window(
             state = WindowState(
-                size = DpSize(1200.dp, 900.dp)
+                size = DpSize(1200.dp, 830.dp)
             ),
             title = "HandballXport",
             onCloseRequest = ::exitApplication,

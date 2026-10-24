@@ -41,6 +41,8 @@ fun nameNormalizerScreen(
     nameNormalizer: NameNormalizer
 ) {
     var newTeamAbbreviation by remember { mutableStateOf("") }
+    var newSpecialTeamNameBefore by remember { mutableStateOf("") }
+    var newSpecialTeamNameAfter by remember { mutableStateOf("") }
 
     val scaffoldState = rememberScaffoldState()
     teamAbbreviations = nameNormalizer.teamAbbreviations.toMutableStateList()
@@ -49,6 +51,7 @@ fun nameNormalizerScreen(
     specialGymNames = nameNormalizer.specialGymNames.toMutableStateList()
 
     val scrollState = rememberScrollState(0)
+    val scrollBarAdapter = rememberScrollbarAdapter(scrollState)
 
     MaterialTheme {
         Scaffold(
@@ -86,11 +89,11 @@ fun nameNormalizerScreen(
                     Row(
                         modifier = Modifier
                             .padding(top = 10.dp)
-                            .verticalScroll(scrollState)
                     ) {
                         Column (
                             modifier = Modifier
-                                .fillMaxWidth()
+                                .fillMaxWidth(0.98f)
+                                .verticalScroll(scrollState)
                         ) {
                             Row {
                                 Column {
@@ -106,14 +109,14 @@ fun nameNormalizerScreen(
                                 }
                             }
 
-                            Row (
+                            Row(
                                 modifier = Modifier
                                     .padding(top = 10.dp)
                                     .fillMaxWidth()
                             ) {
                                 Column(
                                     modifier = Modifier
-                                        .fillMaxWidth(0.75f)
+                                        .fillMaxWidth(0.8f)
                                         .padding(end = 5.dp)
                                 ) {
                                     TextField(
@@ -126,7 +129,7 @@ fun nameNormalizerScreen(
                                             Text("Team-Abkürzung")
                                         },
                                         placeholder = {
-                                            Text ("z.B. \"HV\" oder \"LHV\"")
+                                            Text("z.B. \"HV\" oder \"LHV\"")
                                         }
                                     )
                                 }
@@ -137,7 +140,7 @@ fun nameNormalizerScreen(
                                 ) {
                                     Button(
                                         onClick = {
-                                            if(newTeamAbbreviation.isEmpty()) {
+                                            if (newTeamAbbreviation.isEmpty()) {
                                                 logger.info("New team abbreviation was empty, aborting adding-process")
                                                 backgroundCoroutineScope.launch {
                                                     scaffoldState.snackbarHostState.showSnackbar("Bitte gib einen Wert im Textfeld ein!")
@@ -182,6 +185,145 @@ fun nameNormalizerScreen(
                                     )
                                 }
                             }
+
+                            sectionDivider(5.dp)
+
+                            Row {
+                                Column {
+                                    Text(
+                                        text = "Besondere Team-Namen",
+                                        style = MaterialTheme.typography.h6
+                                    )
+                                    Text(
+                                        text = "Hier werden die Abkürzungen und Team-Namen erfasst, die nicht komplett groß geschrieben werden sollen bzw. auch die, die komplett falsch geschrieben sind. z.B. die Abkürzung \"VfB\" hat einen kleinen Buchstaben. Damit die richtig angezeigt wird, muss im ersten Feld die Variante, wie sie auf handball.net zu finden ist, erfasst werden - also \"VFB\" - und im zweiten Feld die korrekte Variante für die Anzeige - also \"VfB\". Dasselbe gilt auch für falsch geschriebene Team-Namen, z.B. \"GROSSENHAIN\" -> \"Großenhain\".",
+                                        style = MaterialTheme.typography.subtitle1,
+                                        modifier = Modifier.padding(top = 5.dp)
+                                    )
+                                }
+                            }
+
+                            Row(
+                                modifier = Modifier
+                                    .padding(top = 10.dp)
+                                    .fillMaxWidth()
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth(0.4f)
+                                        .padding(end = 5.dp)
+                                ) {
+                                    TextField(
+                                        value = newSpecialTeamNameBefore,
+                                        onValueChange = { newSpecialTeamNameBefore = it },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .align(Alignment.End),
+                                        label = {
+                                            Text("Besonderer Team-Name in handball.net")
+                                        },
+                                        placeholder = {
+                                            Text("z.B. \"VFB\" oder \"GROSSENHAIN\"")
+                                        }
+                                    )
+                                }
+
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth(0.66f)
+                                        .padding(end = 5.dp)
+                                ) {
+                                    TextField(
+                                        value = newSpecialTeamNameAfter,
+                                        onValueChange = { newSpecialTeamNameAfter = it },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .align(Alignment.End),
+                                        label = {
+                                            Text("Besonderer Team-Name korrekt geschrieben")
+                                        },
+                                        placeholder = {
+                                            Text("z.B. \"VfB\" oder \"Großenhain\"")
+                                        }
+                                    )
+                                }
+
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                ) {
+                                    Button(
+                                        onClick = {
+                                            if (newSpecialTeamNameBefore.isEmpty()) {
+                                                logger.info("New special team name was empty, aborting adding-process")
+                                                backgroundCoroutineScope.launch {
+                                                    scaffoldState.snackbarHostState.showSnackbar("Bitte gib einen Wert mindestens im ersten Textfeld ein!")
+                                                }
+                                                return@Button
+                                            }
+                                            val newSpecialTeamName = SpecialTeamName(newSpecialTeamNameBefore, newSpecialTeamNameAfter)
+                                            specialTeamNames.add(newSpecialTeamName)
+                                            nameNormalizer.addSpecialTeamName(newSpecialTeamName)
+                                            newSpecialTeamNameBefore = ""
+                                            newSpecialTeamNameAfter = ""
+                                        },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                    ) {
+                                        Text("Füge besonderer Team-Namen hinzu")
+                                    }
+                                }
+                            }
+
+                            sectionDivider(2.dp)
+
+                            Row {
+                                Column {
+                                    expandableCard(
+                                        title = "Besondere Team-Namen",
+                                        content = {
+                                            ExpandableTagList(
+                                                items = specialTeamNames,
+
+                                                onRemove = { index ->
+                                                    val removedElement = specialTeamNames.removeAt(index)
+                                                    nameNormalizer.removeSpecialTeamName(removedElement)
+                                                },
+
+                                                itemContent = { specialTeamName ->
+
+                                                    Column {
+
+                                                        Text(
+                                                            text = specialTeamName.key,
+                                                            style = MaterialTheme.typography.body2
+                                                        )
+
+                                                        Text(
+                                                            text = specialTeamName.value,
+                                                            style = MaterialTheme.typography.caption,
+                                                            color = MaterialTheme.colors.onSurface.copy(
+                                                                alpha = 0.6f
+                                                            )
+                                                        )
+                                                    }
+                                                }
+                                            )
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        ) {
+                            VerticalScrollbar(
+                                adapter = scrollBarAdapter,
+                                modifier = Modifier
+                                    .align(Alignment.End)
+                                    .padding(start = 2.dp, end = 1.dp)
+                            )
                         }
                     }
                 }
