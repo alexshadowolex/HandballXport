@@ -5,6 +5,7 @@ import alex.handball.customToString
 import alex.handball.model.Fixture
 import alex.handball.model.NameNormalizer
 import alex.handball.toJavaLocalDate
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -84,9 +85,9 @@ fun columnDivider() {
     Divider(
         modifier = Modifier
             .fillMaxHeight()
-            .padding(top = 5.dp, bottom = 5.dp)
-            .width(2.dp),
-        color = MaterialTheme.colors.primary
+            .padding(vertical = 5.dp)
+            .width(2.dp)
+            .background(MaterialTheme.colors.primary)
     )
 }
 

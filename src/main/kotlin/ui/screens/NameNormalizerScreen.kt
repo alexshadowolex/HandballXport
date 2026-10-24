@@ -1,6 +1,7 @@
 package alex.handball.ui.screens
 
 import alex.handball.backgroundCoroutineScope
+import alex.handball.logger
 import alex.handball.model.NameNormalizer
 import alex.handball.model.SpecialGymName
 import alex.handball.model.SpecialTeamName
@@ -11,14 +12,22 @@ import alex.handball.ui.screenHeaderRow
 import alex.handball.ui.sectionDivider
 
 import androidx.compose.foundation.VerticalScrollbar
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.rememberScrollbarAdapter
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
@@ -112,7 +121,13 @@ fun nameNormalizerScreen(
                                         onValueChange = { newTeamAbbreviation = it },
                                         modifier = Modifier
                                             .fillMaxWidth(0.5F)
-                                            .align(Alignment.End)
+                                            .align(Alignment.End),
+                                        label = {
+                                            Text("Team-Abkürzung")
+                                        },
+                                        placeholder = {
+                                            Text ("z.B. \"HV\" oder \"LHV\"")
+                                        }
                                     )
                                 }
 
@@ -122,7 +137,16 @@ fun nameNormalizerScreen(
                                 ) {
                                     Button(
                                         onClick = {
-
+                                            if(newTeamAbbreviation.isEmpty()) {
+                                                logger.info("New team abbreviation was empty, aborting adding-process")
+                                                backgroundCoroutineScope.launch {
+                                                    scaffoldState.snackbarHostState.showSnackbar("Bitte gib einen Wert im Textfeld ein!")
+                                                }
+                                                return@Button
+                                            }
+                                            teamAbbreviations.add(newTeamAbbreviation)
+                                            nameNormalizer.addTeamAbbreviation(newTeamAbbreviation)
+                                            newTeamAbbreviation = ""
                                         },
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -139,45 +163,94 @@ fun nameNormalizerScreen(
                                     expandableCard(
                                         title = "Team-Abkürzungen",
                                         content = {
-                                            for(i in 0..<teamAbbreviations.size step 2) {
-                                                val teamAbbreviation = teamAbbreviations[i]
-                                                val secondTeamAbbreviation = if(i + 1 < teamAbbreviations.size - 1) {
-                                                    teamAbbreviations[i + 1]
-                                                } else {
-                                                    null
+                                            ExpandableTagList(
+                                                items = teamAbbreviations,
+
+                                                onRemove = { index ->
+                                                    val removedElement = teamAbbreviations.removeAt(index)
+                                                    nameNormalizer.removeTeamAbbreviation(removedElement)
+                                                },
+
+                                                itemContent = { abbreviation ->
+                                                    Text(
+                                                        text = abbreviation,
+                                                        style = MaterialTheme.typography.body2
+                                                    )
                                                 }
-                                                Row (
-                                                    modifier = Modifier
-                                                        .padding(all = 5.dp)
-                                                        .height(20.dp)
-                                                ) {
-                                                    Column {
-                                                        Text(
-                                                            text = teamAbbreviation
-                                                        )
-                                                    }
-
-                                                    Column {
-                                                        Text("Test")
-                                                    }
-
-                                                    if(secondTeamAbbreviation != null) {
-                                                        columnDivider()
-
-                                                        Column {
-                                                            Text(
-                                                                text = secondTeamAbbreviation
-                                                            )
-                                                        }
-                                                    }
-                                                }
-                                            }
+                                            )
                                         }
                                     )
                                 }
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun <T> ExpandableTagList(
+    items: List<T>,
+    onRemove: (Int) -> Unit,
+    itemContent: @Composable (T) -> Unit,
+    modifier: Modifier = Modifier,
+    horizontalSpacing: Dp = 8.dp,
+    verticalSpacing: Dp = 8.dp
+) {
+    FlowRow(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(all = 5.dp),
+        horizontalArrangement = Arrangement.spacedBy(horizontalSpacing),
+        verticalArrangement = Arrangement.spacedBy(verticalSpacing)
+    ) {
+        items.forEachIndexed { index, item ->
+
+            Row(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(50))
+                    .background(
+                        MaterialTheme.colors.surface
+                    )
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colors.onSurface.copy(
+                            alpha = 0.15f
+                        ),
+                        shape = RoundedCornerShape(50)
+                    )
+                    .padding(
+                        start = 12.dp,
+                        end = 4.dp,
+                        top = 4.dp,
+                        bottom = 4.dp
+                    ),
+
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+                Box(
+                    modifier = Modifier.padding(
+                        end = 4.dp
+                    )
+                ) {
+                    itemContent(item)
+                }
+
+                IconButton(
+                    onClick = {
+                        onRemove(index)
+                    },
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Eintrag entfernen",
+                        modifier = Modifier.size(16.dp)
+                    )
                 }
             }
         }

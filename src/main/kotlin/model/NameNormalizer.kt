@@ -49,6 +49,20 @@ class NameNormalizer {
         teamsMatchedToClub = tmpList
     }*/
 
+    fun removeTeamAbbreviation(teamAbbreviation: String) {
+        val tmpList = teamAbbreviations
+        tmpList.remove(teamAbbreviation)
+
+        teamAbbreviations = tmpList
+    }
+
+    fun addTeamAbbreviation(teamAbbreviation: String) {
+        val tmpList = teamAbbreviations
+        tmpList.add(teamAbbreviation)
+
+        teamAbbreviations = tmpList
+    }
+
     private val romanNumerals = setOf(
         "I",
         "II",
