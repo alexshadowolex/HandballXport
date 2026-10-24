@@ -12,6 +12,7 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.*
@@ -226,9 +227,17 @@ private fun AbbreviationSection(
                     .fillMaxWidth(0.5f)
                     .align(Alignment.End)
                     .padding(end = 5.dp),
-                label = { Text(fieldLabel) },
+                label = {
+                    Text(
+                        text = fieldLabel,
+                        color = MaterialTheme.colors.onPrimary
+                    )
+                },
                 placeholder = { Text(placeholder) },
-                singleLine = true
+                singleLine = true,
+                colors = TextFieldDefaults.textFieldColors(
+                    cursorColor = MaterialTheme.colors.onPrimary
+                )
             )
         }
 
@@ -301,9 +310,17 @@ private fun <T> SpecialNameSection(
                     modifier = Modifier
                         .fillMaxWidth(0.5f)
                         .padding(end = 5.dp),
-                    label = { Text(beforeLabel) },
+                    label = {
+                        Text(
+                            text = beforeLabel,
+                            color = MaterialTheme.colors.onPrimary
+                        )
+                    },
                     placeholder = { Text(beforePlaceholder) },
-                    singleLine = true
+                    singleLine = true,
+                    colors = TextFieldDefaults.textFieldColors(
+                        cursorColor = MaterialTheme.colors.onPrimary
+                    )
                 )
 
                 TextField(
@@ -312,9 +329,17 @@ private fun <T> SpecialNameSection(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(end = 5.dp),
-                    label = { Text(afterLabel) },
+                    label = {
+                        Text(
+                            text = afterLabel,
+                            color = MaterialTheme.colors.onPrimary
+                        )
+                    },
                     placeholder = { Text(afterPlaceholder) },
-                    singleLine = true
+                    singleLine = true,
+                    colors = TextFieldDefaults.textFieldColors(
+                        cursorColor = MaterialTheme.colors.onPrimary
+                    )
                 )
             }
         }

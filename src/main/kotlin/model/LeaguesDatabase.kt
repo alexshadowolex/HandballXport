@@ -45,10 +45,6 @@ class LeaguesDatabase(private val gymHandler: GymHandler) {
         val leaguesToUnparsedHtmlFixtures = readDataFromWebsites()
         parseHtmlToLeaguesWithFixtures(leaguesToUnparsedHtmlFixtures)
 
-        logger.error("leagues: ${leaguesToFixtures.map { 
-            "${it.key.leagueName} ${it.value.size}"
-        }.joinToString("|")}")
-
         logger.info("Following Leagues have no fixtures: ${
             leaguesToFixtures
                 .filter { it.value.isEmpty() }
@@ -56,6 +52,15 @@ class LeaguesDatabase(private val gymHandler: GymHandler) {
                 .ifEmpty { listOf("none") }
                 .joinToString("|")
         }")
+    }
+
+    // TODO finish implementation
+    suspend fun initializeLoadingFixturesFromOneLeague(league: League) {
+        if(leaguesToFixtures[league] != null || leaguesToFixtures[league]?.isEmpty() == true) {
+
+        }
+        val leaguesToUnparsedHtmlFixtures = readDataFromWebsites()
+        parseHtmlToLeaguesWithFixtures(leaguesToUnparsedHtmlFixtures)
     }
 
     /**

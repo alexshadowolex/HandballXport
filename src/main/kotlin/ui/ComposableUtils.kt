@@ -128,7 +128,10 @@ fun dateRangeShowGamesSegment(
                             )
                         },
                         placeholder = {
-                            Text("Format: TT.MM.JJJJ")
+                            Text(
+                                text = "Format: TT.MM.JJJJ",
+                                color = MaterialTheme.colors.onPrimary
+                            )
                         },
                         value = fromDate.value,
                         onValueChange = { value ->
@@ -136,7 +139,10 @@ fun dateRangeShowGamesSegment(
                         },
                         singleLine = true,
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .fillMaxWidth(),
+                        colors = TextFieldDefaults.textFieldColors(
+                            cursorColor = MaterialTheme.colors.onPrimary
+                        )
                     )
                 }
 
@@ -166,7 +172,10 @@ fun dateRangeShowGamesSegment(
                         },
                         singleLine = true,
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .fillMaxWidth(),
+                        colors = TextFieldDefaults.textFieldColors(
+                            cursorColor = MaterialTheme.colors.onPrimary
+                        )
                     )
                 }
             }

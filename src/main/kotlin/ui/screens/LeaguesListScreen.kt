@@ -70,6 +70,20 @@ fun leaguesListScreen(
                         .fillMaxWidth()
                 ) {
                     Column {
+                        Text(
+                            text = "Auf dieser Seite können weitere Ligen hinzugefügt oder entfernt werden. Es werden dabei immer alle Spiele einer Liga geholt, was bei Programmstart geschieht. Hier ein paar Erklärungen zu den Feldern:\n" +
+                                    "Liga-Name (kurz): Dieser Name ist die Bezeichnung, die in der List und im Excel-Export zu sehen ist. Das könnte sein \"VLMO\", \"ROLM\" oder \"RLmJB\". Es empfielt sich, jeden Namen nur einmal zu verwenden - aber es ist auch möglich, einen Namen mehrfach zu vergeben.\n" +
+                                    "NuLiga/handball.net: Das Programm erlaubt das Laden von Spielen aus NuLiga und auch von handball.net. Wird der Button auf die falsche Seite gestellt"
+                        )
+                    }
+                }
+
+                Row(
+                    modifier = Modifier
+                        .padding(top = 10.dp)
+                        .fillMaxWidth()
+                ) {
+                    Column {
                         Row {
                             Column(
                                 modifier = Modifier
@@ -86,7 +100,13 @@ fun leaguesListScreen(
                                     onValueChange = { value ->
                                         newLeagueName = value
                                     },
-                                    singleLine = true
+                                    singleLine = true,
+                                    placeholder = {
+                                        Text("z.B. \"VLMO\"")
+                                    },
+                                    colors = TextFieldDefaults.textFieldColors(
+                                        cursorColor = MaterialTheme.colors.onPrimary
+                                    )
                                 )
                             }
 
@@ -134,8 +154,11 @@ fun leaguesListScreen(
                                     label = {
                                         Text(
                                             color = MaterialTheme.colors.onPrimary,
-                                            text = "Unterscheidungstext im Liganame (z.B. \"St. 1\")"
+                                            text = "Unterscheidungstext im Liganame (nur für handball.net)"
                                         )
+                                    },
+                                    placeholder = {
+                                        Text("z.B. \"St. 1\"")
                                     },
                                     value = newLeagueDistinguishingNameSubstring,
                                     onValueChange = { value ->
@@ -143,7 +166,10 @@ fun leaguesListScreen(
                                     },
                                     singleLine = true,
                                     modifier = Modifier
-                                        .fillMaxWidth()
+                                        .fillMaxWidth(),
+                                    colors = TextFieldDefaults.textFieldColors(
+                                        cursorColor = MaterialTheme.colors.onPrimary
+                                    )
                                 )
                             }
                         }
@@ -164,13 +190,19 @@ fun leaguesListScreen(
                                             text = "Liga Link handball.net/NuLiga"
                                         )
                                     },
+                                    placeholder = {
+                                        Text("z.B. https://www.handball.net/spielbetrieb/... oder https://hvs-handball.liga.nu/cgi-bin/...")
+                                    },
                                     value = newLeagueLink,
                                     onValueChange = { value ->
                                         newLeagueLink = value
                                     },
                                     singleLine = true,
                                     modifier = Modifier
-                                        .fillMaxWidth()
+                                        .fillMaxWidth(),
+                                    colors = TextFieldDefaults.textFieldColors(
+                                        cursorColor = MaterialTheme.colors.onPrimary
+                                    )
                                 )
                             }
 
