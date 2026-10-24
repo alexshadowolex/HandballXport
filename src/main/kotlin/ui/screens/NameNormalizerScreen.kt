@@ -43,6 +43,7 @@ fun nameNormalizerScreen(
     var newTeamAbbreviation by remember { mutableStateOf("") }
     var newSpecialTeamNameBefore by remember { mutableStateOf("") }
     var newSpecialTeamNameAfter by remember { mutableStateOf("") }
+    var newGymAbbreviation by remember { mutableStateOf("") }
 
     val scaffoldState = rememberScaffoldState()
     teamAbbreviations = nameNormalizer.teamAbbreviations.toMutableStateList()
@@ -269,7 +270,7 @@ fun nameNormalizerScreen(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                     ) {
-                                        Text("Füge besonderer Team-Namen hinzu")
+                                        Text("Füge besonderen Team-Namen hinzu")
                                     }
                                 }
                             }
@@ -306,6 +307,99 @@ fun nameNormalizerScreen(
                                                             )
                                                         )
                                                     }
+                                                }
+                                            )
+                                        }
+                                    )
+                                }
+                            }
+
+                            sectionDivider(5.dp)
+
+                            Row {
+                                Column {
+                                    Text(
+                                        text = "Hallen-Abkürzungen",
+                                        style = MaterialTheme.typography.h6
+                                    )
+                                    Text(
+                                        text = "Analog zu den Team-Abkürzungen werden hier die Abkürzungen von Hallen erfasst, die komplett groß geschrieben werden sollen (z.B. \"SH\", \"BSZ\").",
+                                        style = MaterialTheme.typography.subtitle1,
+                                        modifier = Modifier.padding(top = 5.dp)
+                                    )
+                                }
+                            }
+
+                            Row(
+                                modifier = Modifier
+                                    .padding(top = 10.dp)
+                                    .fillMaxWidth()
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth(0.8f)
+                                        .padding(end = 5.dp)
+                                ) {
+                                    TextField(
+                                        value = newGymAbbreviation,
+                                        onValueChange = { newGymAbbreviation = it },
+                                        modifier = Modifier
+                                            .fillMaxWidth(0.5F)
+                                            .align(Alignment.End),
+                                        label = {
+                                            Text("Hallen-Abkürzung")
+                                        },
+                                        placeholder = {
+                                            Text("z.B. \"SH\" oder \"BSZ\"")
+                                        }
+                                    )
+                                }
+
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                ) {
+                                    Button(
+                                        onClick = {
+                                            if (newGymAbbreviation.isEmpty()) {
+                                                logger.info("New gym abbreviation was empty, aborting adding-process")
+                                                backgroundCoroutineScope.launch {
+                                                    scaffoldState.snackbarHostState.showSnackbar("Bitte gib einen Wert im Textfeld ein!")
+                                                }
+                                                return@Button
+                                            }
+                                            gymAbbreviations.add(newGymAbbreviation)
+                                            nameNormalizer.addGymAbbreviation(newGymAbbreviation)
+                                            newGymAbbreviation = ""
+                                        },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                    ) {
+                                        Text("Füge Hallen-Abkürzung hinzu")
+                                    }
+                                }
+                            }
+
+                            sectionDivider(2.dp)
+
+                            Row {
+                                Column {
+                                    expandableCard(
+                                        title = "Hallen-Abkürzungen",
+                                        content = {
+                                            ExpandableTagList(
+                                                items = gymAbbreviations,
+
+                                                onRemove = { index ->
+                                                    val removedElement = gymAbbreviations.removeAt(index)
+                                                    nameNormalizer.removeGymAbbreviation(removedElement)
+                                                },
+
+                                                itemContent = { abbreviation ->
+                                                    Text(
+                                                        text = abbreviation,
+                                                        style = MaterialTheme.typography.body2
+                                                    )
                                                 }
                                             )
                                         }

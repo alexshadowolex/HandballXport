@@ -69,6 +69,20 @@ class NameNormalizer {
         specialTeamNames = tmpList
     }
 
+    fun removeGymAbbreviation(gymAbbreviation: String) {
+        val tmpList = gymAbbreviations
+        tmpList.remove(gymAbbreviation)
+
+        gymAbbreviations = tmpList
+    }
+
+    fun addGymAbbreviation(gymAbbreviation: String) {
+        val tmpList = gymAbbreviations
+        tmpList.add(gymAbbreviation)
+
+        gymAbbreviations = tmpList
+    }
+
     private val romanNumerals = setOf(
         "I",
         "II",
