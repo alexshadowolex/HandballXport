@@ -5,8 +5,6 @@ import alex.handball.logger
 import alex.handball.model.NameNormalizer
 import alex.handball.model.SpecialGymName
 import alex.handball.model.SpecialTeamName
-import alex.handball.toJavaLocalDate
-import alex.handball.ui.columnDivider
 import alex.handball.ui.expandableCard
 import alex.handball.ui.screenHeaderRow
 import alex.handball.ui.sectionDivider
@@ -22,7 +20,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,6 +41,8 @@ fun nameNormalizerScreen(
     var newSpecialTeamNameBefore by remember { mutableStateOf("") }
     var newSpecialTeamNameAfter by remember { mutableStateOf("") }
     var newGymAbbreviation by remember { mutableStateOf("") }
+    var newSpecialGymNameBefore by remember { mutableStateOf("") }
+    var newSpecialGymNameAfter by remember { mutableStateOf("") }
 
     val scaffoldState = rememberScaffoldState()
     teamAbbreviations = nameNormalizer.teamAbbreviations.toMutableStateList()
@@ -400,6 +399,133 @@ fun nameNormalizerScreen(
                                                         text = abbreviation,
                                                         style = MaterialTheme.typography.body2
                                                     )
+                                                }
+                                            )
+                                        }
+                                    )
+                                }
+                            }
+
+                            sectionDivider(5.dp)
+
+                            Row {
+                                Column {
+                                    Text(
+                                        text = "Besondere Hallen-Namen",
+                                        style = MaterialTheme.typography.h6
+                                    )
+                                    Text(
+                                        text = "Analog zu den besonderen Team-Namen werden hier die Abkürzungen und Hallen-Namen erfasst, die nicht komplett groß geschrieben werden sollen bzw. auch die, die komplett falsch geschrieben sind. z.B. die Abkürzung \"2.SPIELFELD\" ist komplett groß geschrieben, vermisst ein Leerzeichen und hat eine Zahl im Namen. Damit das richtig angezeigt wird, muss im ersten Feld die Variante, wie sie auf handball.net zu finden ist, erfasst werden - also \"2.SPIELFELD\" - und im zweiten Feld die korrekte Variante für die Anzeige - also \"2. Spielfeld\". Dasselbe gilt auch für falsch geschriebene Hallen-Namen.",
+                                        style = MaterialTheme.typography.subtitle1,
+                                        modifier = Modifier.padding(top = 5.dp)
+                                    )
+                                }
+                            }
+
+                            Row(
+                                modifier = Modifier
+                                    .padding(top = 10.dp)
+                                    .fillMaxWidth()
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth(0.4f)
+                                        .padding(end = 5.dp)
+                                ) {
+                                    TextField(
+                                        value = newSpecialGymNameBefore,
+                                        onValueChange = { newSpecialGymNameBefore = it },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .align(Alignment.End),
+                                        label = {
+                                            Text("Besonderer Hallen-Name in handball.net")
+                                        },
+                                        placeholder = {
+                                            Text("z.B. \"2.SPIELFELD\"")
+                                        }
+                                    )
+                                }
+
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth(0.66f)
+                                        .padding(end = 5.dp)
+                                ) {
+                                    TextField(
+                                        value = newSpecialGymNameAfter,
+                                        onValueChange = { newSpecialGymNameAfter = it },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .align(Alignment.End),
+                                        label = {
+                                            Text("Besonderer Hallen-Name korrekt geschrieben")
+                                        },
+                                        placeholder = {
+                                            Text("z.B. \"2. Spielfeld\"")
+                                        }
+                                    )
+                                }
+
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                ) {
+                                    Button(
+                                        onClick = {
+                                            if (newSpecialGymNameBefore.isEmpty()) {
+                                                logger.info("New special gym name was empty, aborting adding-process")
+                                                backgroundCoroutineScope.launch {
+                                                    scaffoldState.snackbarHostState.showSnackbar("Bitte gib einen Wert mindestens im ersten Textfeld ein!")
+                                                }
+                                                return@Button
+                                            }
+                                            val newSpecialGymName = SpecialGymName(newSpecialGymNameBefore, newSpecialGymNameAfter)
+                                            specialGymNames.add(newSpecialGymName)
+                                            nameNormalizer.addSpecialGymName(newSpecialGymName)
+                                            newSpecialGymNameBefore = ""
+                                            newSpecialGymNameAfter = ""
+                                        },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                    ) {
+                                        Text("Füge besonderen Hallen-Namen hinzu")
+                                    }
+                                }
+                            }
+
+                            sectionDivider(2.dp)
+
+                            Row {
+                                Column {
+                                    expandableCard(
+                                        title = "Besondere Hallen-Namen",
+                                        content = {
+                                            ExpandableTagList(
+                                                items = specialGymNames,
+
+                                                onRemove = { index ->
+                                                    val removedElement = specialGymNames.removeAt(index)
+                                                    nameNormalizer.removeSpecialGymName(removedElement)
+                                                },
+
+                                                itemContent = { specialGymName ->
+
+                                                    Column {
+
+                                                        Text(
+                                                            text = specialGymName.key,
+                                                            style = MaterialTheme.typography.body2
+                                                        )
+
+                                                        Text(
+                                                            text = specialGymName.value,
+                                                            style = MaterialTheme.typography.caption,
+                                                            color = MaterialTheme.colors.onSurface.copy(
+                                                                alpha = 0.6f
+                                                            )
+                                                        )
+                                                    }
                                                 }
                                             )
                                         }
