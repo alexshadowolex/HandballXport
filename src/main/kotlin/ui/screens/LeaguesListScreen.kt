@@ -5,6 +5,7 @@ import alex.handball.logger
 import alex.handball.model.League
 import alex.handball.model.LeaguesDatabase
 import alex.handball.ui.HelpIcon
+import alex.handball.ui.LeagueLinkHelpDialog
 import alex.handball.ui.expandableCard
 import alex.handball.ui.screenHeaderRow
 import alex.handball.ui.sectionDivider
@@ -287,6 +288,27 @@ fun leaguesListScreen(
                                 ) {
                                     Text("Zur Liste hinzufügen")
                                 }
+                            }
+                        }
+
+                        Row (
+                            modifier = Modifier
+                                .padding(top = 5.dp)
+                        ) {
+                            var showLinkHelp by remember { mutableStateOf(false) }
+
+                            TextButton(
+                                onClick = { showLinkHelp = true },
+                                contentPadding = PaddingValues(horizontal = 0.dp, vertical = 4.dp)
+                            ) {
+                                Text("Wie finde ich den richtigen Link?")
+                            }
+
+                            if (showLinkHelp) {
+                                LeagueLinkHelpDialog(
+                                    onDismiss = { showLinkHelp = false },
+                                    isNuLiga = newLeagueNuLigaLeague == labelNuLiga
+                                )
                             }
                         }
                     }

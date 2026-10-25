@@ -12,6 +12,7 @@ import androidx.compose.foundation.TooltipPlacement
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.TabRowDefaults.Divider
@@ -392,6 +393,107 @@ fun HelpIcon(
             imageVector = Icons.Default.Info,
             contentDescription = "Hilfe",
             tint = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+        )
+    }
+}
+
+
+@Composable
+fun LeagueLinkHelpDialog(
+    onDismiss: () -> Unit,
+    isNuLiga: Boolean
+) {
+    var nuLigaOrHandballNet: String
+    var headerText = "Der Link muss auf die "
+    var stepList: List<String>
+    if(isNuLiga) {
+        nuLigaOrHandballNet = "NuLiga"
+        headerText += "Gesamtübersicht aller Spiele der Liga zeigen. Dabei sind alle Spiele auf derselben Seite zu sehen."
+        stepList = listOf(
+            "Gehe auf https://hvs-handball.liga.nu/",
+            "Klicke links auf den korrekten Wettbewerb (z.B.\"HVS 2026/2027\")",
+            "Klicke auf die korrekte Liga (bzw. vorher auf \"MHV\", wenn es eine MHV-Liga ist)",
+            "Klicke rechts auf \"Spielplan (Gesamt)\"",
+            "Auf der Seite siehst du jetzt alle Spiele der Liga. Kopiere den Link aus der Adressleiste des Browsers.",
+            "Beispiel-Link: https://hvs-handball.liga.nu/cgi-bin/WebObjects/nuLigaHBDE.woa/wa/groupPage?displayTyp=vorrunde&displayDetail=meetings&championship=MHV+2026%2F27&group=485338"
+        )
+    } else {
+        nuLigaOrHandballNet = "Handball.net"
+        headerText += "Gesamtübersicht aller Spiele der Liga im Spielkalender zeigen. Dabei sind alle Spiele auf unterschiedliche Seiten verteilt - der Link jedoch soll nur auf die erste Seite zeigen."
+        stepList = listOf(
+            "Gehe auf https://www.handball.net/",
+            "Klicke auf \"Spielbetrieb\" und dann auf \"Spielkalender\"",
+            "Wähle im Filter \"Verband\" den richtigen Landesverband aus (z.B. \"Handballverband Sachsen\")",
+            "Wähle im Filter \"Altersklasse\" die richtige Altersklasse aus (z.B. \"Erwachsene\")",
+            "Wähle im Filter \"Geschlecht\" das richtige Geschlecht aus (z.B. \"Männlich\")",
+            "Wähle im Filter \"Spielklasse\" die richtige Spielklasse aus (z.B. \"Oberliga Männlich\")",
+            "Wähle im Filter \"Datum\" einen Datumsbereich aus, in dem alle Spiele der Liga erfasst sind. (z.B. 30.07.2026 bis 30.07.2027)",
+            "Auf der Seite siehst du jetzt die erste Seite von allen Spielen der Liga. Kopriere den Link aus der Adressleiste des Browsers.",
+            "Beispiel-Link: https://www.handball.net/spielbetrieb/spielkalender?verband=14&altersklasse=1&geschlecht=male&spielklasse=5&date_from=2026-07-30&date_to=2027-07-30&season=2026%2F2027"
+        )
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text("Wie finde ich den richtigen Link? Anleitung für $nuLigaOrHandballNet")
+        },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(headerText)
+
+                stepList.forEachIndexed { index, stepText ->
+                    LinkHelpStep(
+                        number = index + 1,
+                        text = stepText
+                    )
+                }
+
+                Text(
+                    text = "Achte darauf, dass du die richtige Liga ausgewählt hast.",
+                    style = MaterialTheme.typography.caption,
+                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Verstanden")
+            }
+        }
+    )
+}
+
+@Composable
+private fun LinkHelpStep(
+    number: Int,
+    text: String
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        Surface(
+            shape = CircleShape,
+            color = MaterialTheme.colors.primary,
+            modifier = Modifier.size(28.dp)
+        ) {
+            Box(
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = number.toString(),
+                    color = MaterialTheme.colors.onPrimary,
+                    style = MaterialTheme.typography.body2
+                )
+            }
+        }
+
+        Text(
+            text = text,
+            modifier = Modifier.weight(1f)
         )
     }
 }
