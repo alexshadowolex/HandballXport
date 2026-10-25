@@ -28,18 +28,16 @@ import kotlinx.datetime.todayIn
 import java.time.LocalDate
 
 private val displayFixtures = mutableStateListOf<DisplayFixture>()
-private lateinit var fromDate: MutableState<String>
-private lateinit var toDate: MutableState<String>
+private lateinit var fromDate: MutableState<LocalDate>
+private lateinit var toDate: MutableState<LocalDate>
 val isExcelExportGenerated = mutableStateOf(false)
 
 @Composable
 fun exportScreen(model: Model) {
     val nameNormalizer = model.nameNormalizer
     val scaffoldState = rememberScaffoldState()
-    fromDate = remember { mutableStateOf(
-        Clock.System.todayIn(TimeZone.currentSystemDefault()).toJavaLocalDate().customToString()
-    )}
-    toDate = remember { mutableStateOf(getEndDateForPlannerScreen().customToString()) }
+    fromDate = remember { mutableStateOf(Clock.System.todayIn(TimeZone.currentSystemDefault()).toJavaLocalDate()) }
+    toDate = remember { mutableStateOf(getEndDateForPlannerScreen()) }
 
     MaterialTheme {
         Scaffold (
@@ -61,11 +59,11 @@ fun exportScreen(model: Model) {
                     fromDate,
                     toDate,
                     scaffoldState,
-                    onShowClick = { parsedFromDate, parsedToDate ->
+                    onShowClick = { fromDate, toDate ->
                         displayFixtures.clear()
                         displayFixtures.addAll(model.leaguesDatabase.getFixturesFromDateRange(
-                            parsedFromDate,
-                            parsedToDate
+                            fromDate,
+                            toDate
                         ).map {
                             DisplayFixture(it)
                         })
@@ -355,35 +353,23 @@ private fun fixtureDisplayRow(
     }
 }
 
-private fun triggerRecomposition() {
-    // TODO: this is only a 1b solution to trigger recomposition
-    try {
-        /*val lastElement = fixturePlanners.removeLast()
-        fixturePlanners.add(lastElement)*/
-        displayFixtures[0] = displayFixtures[0].copy()
-    } catch (_: Exception) {
-
-    }
-}
-
 fun removeFixturesOfLeagueFromUi(league: League) {
     displayFixtures.removeIf { it.fixture.league == league }
 }
 
 
 fun addFixturesOfLeagueToUi(league: League, leaguesDatabase: LeaguesDatabase) {
-    val parsedFromDate = fromDate.value.toJavaLocalDate()
-    val parsedToDate = toDate.value.toJavaLocalDate()
+    try {
+        val allDisplayFixtures =
+            leaguesDatabase.getFixturesFromDateRange(fromDate.value, toDate.value).map { DisplayFixture(it) }
 
-    if(parsedFromDate == null || parsedToDate == null) {
-        return
-    }
-    val allDisplayFixtures = leaguesDatabase.getFixturesFromDateRange(parsedFromDate, parsedToDate).map { DisplayFixture(it) }
-
-    allDisplayFixtures.forEachIndexed { index, displayFixture ->
-        if(!displayFixtures.contains(displayFixture) && displayFixture.fixture.league == league) {
-            displayFixtures.add(index, displayFixture)
+        allDisplayFixtures.forEachIndexed { index, displayFixture ->
+            if (!displayFixtures.contains(displayFixture) && displayFixture.fixture.league == league) {
+                displayFixtures.add(index, displayFixture)
+            }
         }
+    } catch (e: Exception) {
+        logger.warn("Error in addFixturesOfLeagueToUi: ${e.message}")
     }
 }
 

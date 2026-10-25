@@ -38,7 +38,7 @@ fun leaguesListScreen(
     val labelNuLiga = "NuLiga"
     val labelHandballNet = "Handball.net"
 
-    var newLeagueNuLigaLeague by remember { mutableStateOf(labelNuLiga) }
+    var newLeagueNuLigaLeague by remember { mutableStateOf(labelHandballNet) }
 
     val scaffoldState = rememberScaffoldState()
     leaguesStateList = leaguesDatabase.leagues.toMutableStateList()
@@ -172,6 +172,7 @@ fun leaguesListScreen(
                                             selected = newLeagueNuLigaLeague == labelNuLiga,
                                             onClick = {
                                                 newLeagueNuLigaLeague = labelNuLiga
+                                                newLeagueDistinguishingNameSubstring = ""
                                              }
                                         )
                                         Text(
@@ -276,8 +277,7 @@ fun leaguesListScreen(
                                             backgroundCoroutineScope.launch {
                                                 isCurrentlyGettingAndSortingData.value = true
                                                 leaguesDatabase.initializeLoadingAllLeagueAndFixtureData()
-                                                // TODO
-                                                //addFixturesOfLeagueToUi(newLeague, leaguesDatabase)
+                                                addFixturesOfLeagueToUi(newLeague, leaguesDatabase)
                                                 isCurrentlyGettingAndSortingData.value = false
                                             }
                                         }
@@ -450,8 +450,7 @@ private fun leagueRow(
             onClick = {
                 backgroundCoroutineScope.launch {
                     leaguesDatabase.removeLeagueFromDatabase(league)
-                    // TODO
-                    //removeFixturesOfLeagueFromUi(league)
+                    removeFixturesOfLeagueFromUi(league)
                     leaguesStateList.remove(league)
 
                     backgroundCoroutineScope.launch {

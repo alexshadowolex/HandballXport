@@ -4,19 +4,16 @@ import alex.handball.backgroundCoroutineScope
 import alex.handball.customToString
 import alex.handball.model.Fixture
 import alex.handball.model.NameNormalizer
-import alex.handball.toJavaLocalDate
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.TooltipArea
-import androidx.compose.foundation.TooltipPlacement
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.TabRowDefaults.Divider
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.runtime.*
@@ -28,8 +25,12 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.YearMonth
+import java.time.format.DateTimeFormatter
+import java.util.*
 
 @Composable
 fun screenHeaderRow(headline: String) {
@@ -101,10 +102,10 @@ fun columnDivider() {
 
 @Composable
 fun dateRangeShowGamesSegment(
-    fromDate: MutableState<String>,
-    toDate: MutableState<String>,
+    fromDate: MutableState<LocalDate>,
+    toDate: MutableState<LocalDate>,
     scaffoldState: ScaffoldState,
-    onShowClick: (parsedFromDate: LocalDate, parsedToDate: LocalDate) -> Unit
+    onShowClick: (fromDate: LocalDate, toDate: LocalDate) -> Unit
 ) {
     Row {
         Text(
@@ -126,30 +127,10 @@ fun dateRangeShowGamesSegment(
                     modifier = Modifier
                         .fillMaxWidth(0.5f)
                 ) {
-                    // TODO: Swap out with date picker and make field not editable
-                    TextField(
-                        label = {
-                            Text(
-                                color = MaterialTheme.colors.onPrimary,
-                                text = "Startdatum"
-                            )
-                        },
-                        placeholder = {
-                            Text(
-                                text = "Format: TT.MM.JJJJ",
-                                color = MaterialTheme.colors.onPrimary
-                            )
-                        },
-                        value = fromDate.value,
-                        onValueChange = { value ->
-                            fromDate.value = value
-                        },
-                        singleLine = true,
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        colors = TextFieldDefaults.textFieldColors(
-                            cursorColor = MaterialTheme.colors.onPrimary
-                        )
+                    DatePickerField(
+                        label = "Startdatum",
+                        date = fromDate.value,
+                        onDateSelected = { fromDate.value = it }
                     )
                 }
 
@@ -162,27 +143,10 @@ fun dateRangeShowGamesSegment(
                     modifier = Modifier
                         .fillMaxWidth()
                 ) {
-                    // TODO: Swap out with date picker and make field not editable
-                    TextField(
-                        label = {
-                            Text(
-                                color = MaterialTheme.colors.onPrimary,
-                                text = "Enddatum"
-                            )
-                        },
-                        placeholder = {
-                            Text("Format: TT.MM.JJJJ")
-                        },
-                        value = toDate.value,
-                        onValueChange = { value ->
-                            toDate.value = value
-                        },
-                        singleLine = true,
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        colors = TextFieldDefaults.textFieldColors(
-                            cursorColor = MaterialTheme.colors.onPrimary
-                        )
+                    DatePickerField(
+                        label = "Enddatum",
+                        date = toDate.value,
+                        onDateSelected = { toDate.value = it }
                     )
                 }
             }
@@ -196,23 +160,22 @@ fun dateRangeShowGamesSegment(
         Column (
             modifier = Modifier
                 .fillMaxWidth()
+                .align(Alignment.CenterVertically)
         ) {
             Button(
                 onClick = {
-                    val parsedFromDate = fromDate.value.toJavaLocalDate()
-                    val parsedToDate = toDate.value.toJavaLocalDate()
 
-                    if(parsedFromDate == null || parsedToDate == null) {
+                    if(toDate.value < fromDate.value) {
                         backgroundCoroutineScope.launch {
                             scaffoldState.snackbarHostState.showSnackbar(
-                                message = "Fehler beim Übernehmen einer der Datumsangaben",
+                                message = "Fehler: Das Enddatum darf nicht vor dem Startdatum liegen!",
                                 duration = SnackbarDuration.Short
                             )
                         }
                         return@Button
                     }
 
-                    onShowClick(parsedFromDate, parsedToDate)
+                    onShowClick(fromDate.value, toDate.value)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -495,5 +458,201 @@ private fun LinkHelpStep(
             text = text,
             modifier = Modifier.weight(1f)
         )
+    }
+}
+
+@Composable
+fun DatePickerField(
+    label: String,
+    date: LocalDate,
+    onDateSelected: (LocalDate) -> Unit
+) {
+    var showDatePicker by remember { mutableStateOf(false) }
+
+    OutlinedTextField(
+        value = date.format(
+            DateTimeFormatter.ofPattern("dd.MM.yyyy")
+        ),
+        onValueChange = {},
+        readOnly = true,
+        label = { Text(label) },
+        trailingIcon = {
+            IconButton(
+                onClick = { showDatePicker = true },
+                modifier = Modifier
+                    .pointerHoverIcon(PointerIcon.Hand)
+            ) {
+                Icon(
+                    Icons.Default.DateRange,
+                    contentDescription = "Datum auswählen"
+                )
+            }
+        },
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true
+    )
+
+    if (showDatePicker) {
+        DatePickerDialog(
+            initialDate = date,
+            onDateSelected = onDateSelected,
+            onDismiss = { showDatePicker = false }
+        )
+    }
+}
+
+@Composable
+fun DatePickerDialog(
+    initialDate: LocalDate,
+    onDateSelected: (LocalDate) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var displayedMonth by remember {
+        mutableStateOf(YearMonth.from(initialDate))
+    }
+
+    var selectedDate by remember {
+        mutableStateOf(initialDate)
+    }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = MaterialTheme.colors.surface
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = {
+                            displayedMonth = displayedMonth.minusMonths(1)
+                        }
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                            contentDescription = "Vorheriger Monat"
+                        )
+                    }
+
+                    Text(
+                        text = displayedMonth.format(
+                            DateTimeFormatter.ofPattern(
+                                "MMMM yyyy",
+                                Locale.GERMAN
+                            )
+                        ),
+                        style = MaterialTheme.typography.h6
+                    )
+
+                    IconButton(
+                        onClick = {
+                            displayedMonth = displayedMonth.plusMonths(1)
+                        }
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                            contentDescription = "Nächster Monat"
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(8.dp))
+
+                // Wochentage
+                Row {
+                    listOf("Mo", "Di", "Mi", "Do", "Fr", "Sa", "So")
+                        .forEach { day ->
+                            Box(
+                                modifier = Modifier.size(40.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = day,
+                                    style = MaterialTheme.typography.caption
+                                )
+                            }
+                        }
+                }
+
+                val firstDayOffset =
+                    displayedMonth.atDay(1).dayOfWeek.value - 1
+                val daysInMonth = displayedMonth.lengthOfMonth()
+
+                val totalCells = ((firstDayOffset + daysInMonth + 6) / 7) * 7
+
+                for (week in 0 until totalCells / 7) {
+                    Row {
+                        for (dayOfWeek in 0..6) {
+                            val cellIndex = week * 7 + dayOfWeek
+                            val dayNumber = cellIndex - firstDayOffset + 1
+
+                            Box(
+                                modifier = Modifier.size(40.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (dayNumber in 1..daysInMonth) {
+                                    val date = displayedMonth.atDay(dayNumber)
+                                    val isSelected = date == selectedDate
+
+                                    Surface(
+                                        modifier = Modifier.size(36.dp)
+                                            .clickable {
+                                                selectedDate = date
+                                            },
+                                        shape = CircleShape,
+                                        color = if (isSelected) {
+                                            MaterialTheme.colors.primary
+                                        } else {
+                                            Color.Transparent
+                                        }
+                                    ) {
+                                        Box(
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = dayNumber.toString(),
+                                                color = if (isSelected) {
+                                                    contentColorFor(
+                                                        MaterialTheme.colors.primary
+                                                    )
+                                                } else {
+                                                    MaterialTheme.colors.onSurface
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(onClick = onDismiss) {
+                        Text("Abbrechen")
+                    }
+
+                    TextButton(
+                        onClick = {
+                            onDateSelected(selectedDate)
+                            onDismiss()
+                        }
+                    ) {
+                        Text("Übernehmen")
+                    }
+                }
+            }
+        }
     }
 }
