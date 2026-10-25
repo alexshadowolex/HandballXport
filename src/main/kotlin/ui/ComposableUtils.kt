@@ -5,12 +5,18 @@ import alex.handball.customToString
 import alex.handball.model.Fixture
 import alex.handball.model.NameNormalizer
 import alex.handball.toJavaLocalDate
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.TooltipArea
+import androidx.compose.foundation.TooltipPlacement
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.TabRowDefaults.Divider
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -347,4 +353,45 @@ fun RowScope.fixtureInfoLine(fixture: Fixture, nameNormalizer: NameNormalizer) {
             .padding(end = 5.dp)
             .align(Alignment.CenterVertically)
     )
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun HelpIcon(
+    tooltipText: String,
+    modifier: Modifier = Modifier
+) {
+    TooltipArea(
+        tooltip = {
+            Surface(
+                modifier = Modifier.widthIn(max = 320.dp),
+                color = MaterialTheme.colors.surface,
+                shape = RoundedCornerShape(8.dp),
+                elevation = 8.dp,
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.15f)
+                )
+            ) {
+                Text(
+                    text = tooltipText,
+                    modifier = Modifier.padding(
+                        horizontal = 12.dp,
+                        vertical = 10.dp
+                    ),
+                    color = MaterialTheme.colors.onSurface,
+                    style = MaterialTheme.typography.body2
+                )
+            }
+        },
+        modifier = modifier,
+        delayMillis = 400,
+        tooltipPlacement = TooltipPlacement.CursorPoint()
+    ) {
+        Icon(
+            imageVector = Icons.Default.Info,
+            contentDescription = "Hilfe",
+            tint = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+        )
+    }
 }

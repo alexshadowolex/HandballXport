@@ -4,6 +4,7 @@ import alex.handball.backgroundCoroutineScope
 import alex.handball.logger
 import alex.handball.model.League
 import alex.handball.model.LeaguesDatabase
+import alex.handball.ui.HelpIcon
 import alex.handball.ui.expandableCard
 import alex.handball.ui.screenHeaderRow
 import alex.handball.ui.sectionDivider
@@ -13,6 +14,7 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
@@ -55,15 +57,6 @@ fun leaguesListScreen(
                         .height(20.dp)
                 )
 
-                Row {
-                    Column {
-                        Text(
-                            text = "Neue Liga hinzufügen",
-                        )
-                    }
-                }
-
-
                 Row(
                     modifier = Modifier
                         .padding(top = 10.dp)
@@ -71,106 +64,134 @@ fun leaguesListScreen(
                 ) {
                     Column {
                         Text(
-                            text = "Auf dieser Seite können weitere Ligen hinzugefügt oder entfernt werden. Es werden dabei immer alle Spiele einer Liga geholt, was bei Programmstart geschieht. Hier ein paar Erklärungen zu den Feldern:\n" +
-                                    "Liga-Name (kurz): Dieser Name ist die Bezeichnung, die in der List und im Excel-Export zu sehen ist. Das könnte sein \"VLMO\", \"ROLM\" oder \"RLmJB\". Es empfielt sich, jeden Namen nur einmal zu verwenden - aber es ist auch möglich, einen Namen mehrfach zu vergeben.\n" +
-                                    "NuLiga/handball.net: Das Programm erlaubt das Laden von Spielen aus NuLiga und auch von handball.net. Wird der Button auf die falsche Seite gestellt"
+                            text = "Hier kannst du weitere Ligen hinzufügen oder entfernen. Beim Programmstart und beim Hinzufügen/Entfernen werden die Spiele aller eingetragenen Ligen geladen."
                         )
                     }
                 }
 
                 Row(
                     modifier = Modifier
-                        .padding(top = 10.dp)
+                        .padding(top = 20.dp)
                         .fillMaxWidth()
                 ) {
                     Column {
                         Row {
                             Column(
                                 modifier = Modifier
-                                    .fillMaxWidth(0.3F)
+                                    .fillMaxWidth(0.33F)
                             ) {
-                                TextField(
-                                    label = {
-                                        Text(
-                                            color = MaterialTheme.colors.onPrimary,
-                                            text = "Liga Name (kurz)"
-                                        )
-                                    },
-                                    value = newLeagueName,
-                                    onValueChange = { value ->
-                                        newLeagueName = value
-                                    },
-                                    singleLine = true,
-                                    placeholder = {
-                                        Text("z.B. \"VLMO\"")
-                                    },
-                                    colors = TextFieldDefaults.textFieldColors(
-                                        cursorColor = MaterialTheme.colors.onPrimary
-                                    )
-                                )
-                            }
-
-                            Spacer(
-                                modifier = Modifier
-                                    .width(5.dp)
-                            )
-
-                            Column {
                                 Row {
-                                    RadioButton(
-                                        selected = newLeagueNuLigaLeague == labelNuLiga,
-                                        onClick = {
-                                            newLeagueNuLigaLeague = labelNuLiga
-                                        }
+                                    TextField(
+                                        label = {
+                                            Text(
+                                                color = MaterialTheme.colors.onPrimary,
+                                                text = "Liga Name (kurz)"
+                                            )
+                                        },
+                                        value = newLeagueName,
+                                        onValueChange = { value ->
+                                            newLeagueName = value
+                                        },
+                                        singleLine = true,
+                                        placeholder = {
+                                            Text("z.B. \"VLMO\"")
+                                        },
+                                        colors = TextFieldDefaults.textFieldColors(
+                                            cursorColor = MaterialTheme.colors.onPrimary
+                                        ),
+                                        modifier = Modifier
+                                            .fillMaxWidth(0.9f)
                                     )
-                                    Text(
-                                        text = labelNuLiga,
-                                        modifier = Modifier.align(Alignment.CenterVertically)
-                                    )
-                                }
-                            }
 
-                            Column {
-                                Row {
-                                    RadioButton(
-                                        selected = newLeagueNuLigaLeague == labelHandballNet,
-                                        onClick = {
-                                            newLeagueNuLigaLeague = labelHandballNet
-                                        }
-                                    )
-                                    Text(
-                                        text = labelHandballNet,
-                                        modifier = Modifier.align(Alignment.CenterVertically)
+                                    HelpIcon(
+                                        tooltipText = "Dieser Name ist die Bezeichnung, die in der List und im Excel-Export zu sehen ist. Das könnte sein \"VLMO\", \"ROLM\" oder \"RLmJB\". Es empfielt sich, jeden Namen nur einmal zu verwenden - aber es ist auch möglich, einen Namen mehrfach zu vergeben.",
+                                        modifier = Modifier.padding(start = 5.dp)
                                     )
                                 }
                             }
 
                             Column(
                                 modifier = Modifier
+                                    .fillMaxWidth(0.5f)
+                                    .padding(start = 10.dp)
+                            ) {
+                                Row {
+                                    TextField(
+                                        label = {
+                                            Text(
+                                                color = MaterialTheme.colors.onPrimary,
+                                                text = "Unterscheidungstext im Liganame"
+                                            )
+                                        },
+                                        placeholder = {
+                                            Text("z.B. \"St. 1\"")
+                                        },
+                                        value = newLeagueDistinguishingNameSubstring,
+                                        onValueChange = { value ->
+                                            newLeagueDistinguishingNameSubstring = value
+                                        },
+                                        singleLine = true,
+                                        colors = TextFieldDefaults.textFieldColors(
+                                            cursorColor = MaterialTheme.colors.onPrimary
+                                        ),
+                                        enabled = newLeagueNuLigaLeague == labelHandballNet,
+                                        modifier = Modifier
+                                            .fillMaxWidth(0.9f)
+                                    )
+
+                                    HelpIcon(
+                                        tooltipText = "Wird nur bei handball.net-Quelle benötigt. Die Liste von allen Spielen einer Liga kann Spiele von z.B. unterschiedlichen Staffeln beinhalten. So werden z.B. in der Verbandsliga von Sachsen unter einem Link die Spiele der Staffeln Ost und West aufgeführt. Analoges kann auch bei anderen Ligen passieren, z.B. RLM St. 1 und St. 2; Pokalligen sind oft in den ROLM-Ligen mit erfasst. Sobald ein Link 2 Ligen beinhaltet, muss zur korrekten Unterscheidung ein Teil-Text erfasst werden, der in jedem Spiel im Ligenname vorhanden ist. Am Beispiel Verbandsliga würde man dann eine Liga VLMW erfassen mit dem Unterscheidungstext \"West\" und eine Liga VLMO mit demselben Link, aber dem Unterscheidungstext \"Ost\".",
+                                        modifier = Modifier.padding(start = 5.dp)
+                                    )
+                                }
+                            }
+
+                            Column (
+                                modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(start = 20.dp)
                             ) {
-                                TextField(
-                                    label = {
-                                        Text(
-                                            color = MaterialTheme.colors.onPrimary,
-                                            text = "Unterscheidungstext im Liganame (nur für handball.net)"
-                                        )
-                                    },
-                                    placeholder = {
-                                        Text("z.B. \"St. 1\"")
-                                    },
-                                    value = newLeagueDistinguishingNameSubstring,
-                                    onValueChange = { value ->
-                                        newLeagueDistinguishingNameSubstring = value
-                                    },
-                                    singleLine = true,
+                                Row (
                                     modifier = Modifier
-                                        .fillMaxWidth(),
-                                    colors = TextFieldDefaults.textFieldColors(
-                                        cursorColor = MaterialTheme.colors.onPrimary
+                                        .fillMaxWidth()
+                                ) {
+                                    Text("Quelle")
+
+                                    HelpIcon(
+                                        tooltipText = "Das Programm erlaubt das Laden von Spielen aus NuLiga und auch von handball.net. Wird der Button auf die falsche Quelle gestellt, dann werden von der Liga die Spiele nicht angezeigt. Das kann durch Entfernen und Hinzufügen der Liga wieder korrigiert werden.",
+                                        modifier = Modifier.padding(start = 5.dp)
                                     )
-                                )
+                                }
+                                Row (
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                ) {
+                                    Row {
+                                        RadioButton(
+                                            selected = newLeagueNuLigaLeague == labelNuLiga,
+                                            onClick = {
+                                                newLeagueNuLigaLeague = labelNuLiga
+                                             }
+                                        )
+                                        Text(
+                                            text = labelNuLiga,
+                                            modifier = Modifier.align(Alignment.CenterVertically)
+                                        )
+                                    }
+
+                                    Row {
+                                        RadioButton(
+                                            selected = newLeagueNuLigaLeague == labelHandballNet,
+                                            onClick = {
+                                                newLeagueNuLigaLeague = labelHandballNet
+                                            }
+                                        )
+                                        Text(
+                                            text = labelHandballNet,
+                                            modifier = Modifier.align(Alignment.CenterVertically)
+                                        )
+                                    }
+                                }
                             }
                         }
 
@@ -181,29 +202,36 @@ fun leaguesListScreen(
 
                             Column (
                                 modifier = Modifier
-                                    .fillMaxWidth(0.7f)
+                                    .fillMaxWidth(0.665f)
                             ) {
-                                TextField(
-                                    label = {
-                                        Text(
-                                            color = MaterialTheme.colors.onPrimary,
-                                            text = "Liga Link handball.net/NuLiga"
+                                Row {
+                                    TextField(
+                                        label = {
+                                            Text(
+                                                color = MaterialTheme.colors.onPrimary,
+                                                text = "Liga Link handball.net/NuLiga"
+                                            )
+                                        },
+                                        placeholder = {
+                                            Text("z.B. https://www.handball.net/spielbetrieb/... oder https://hvs-handball.liga.nu/cgi-bin/...")
+                                        },
+                                        value = newLeagueLink,
+                                        onValueChange = { value ->
+                                            newLeagueLink = value
+                                        },
+                                        singleLine = true,
+                                        modifier = Modifier
+                                            .fillMaxWidth(0.95f),
+                                        colors = TextFieldDefaults.textFieldColors(
+                                            cursorColor = MaterialTheme.colors.onPrimary
                                         )
-                                    },
-                                    placeholder = {
-                                        Text("z.B. https://www.handball.net/spielbetrieb/... oder https://hvs-handball.liga.nu/cgi-bin/...")
-                                    },
-                                    value = newLeagueLink,
-                                    onValueChange = { value ->
-                                        newLeagueLink = value
-                                    },
-                                    singleLine = true,
-                                    modifier = Modifier
-                                        .fillMaxWidth(),
-                                    colors = TextFieldDefaults.textFieldColors(
-                                        cursorColor = MaterialTheme.colors.onPrimary
                                     )
-                                )
+
+                                    HelpIcon(
+                                        tooltipText = "Der Link muss zu einer bestimmten Seite zeigen, über die alle Spiele der Liga erreichbar sind. Es funktioniert pro System nur je ein Direktlink. Zur genauen Erklärung, wie man zu dem Link kommt, unten auf den Text \"Wie finde ich den richtigen Link?\" klicken.",
+                                        modifier = Modifier.padding(start = 5.dp)
+                                    )
+                                }
                             }
 
                             Spacer(
