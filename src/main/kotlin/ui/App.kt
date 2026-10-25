@@ -20,6 +20,7 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -47,75 +48,76 @@ val darkColorPalette = darkColors(
 @Preview
 fun app(application: Application) {
     if (!application.isInitialized.value) {
-        return
-    }
-    val model = application.model
-    val handler = application.handler
+        LoadingScreen()
+    } else {
+        val model = application.model
+        val handler = application.handler
 
-    var isInDarkMode by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        while (true) {
-            isInDarkMode = isWindowsInDarkMode()
-            delay(1.seconds)
+        var isInDarkMode by remember { mutableStateOf(false) }
+        LaunchedEffect(Unit) {
+            while (true) {
+                isInDarkMode = isWindowsInDarkMode()
+                delay(1.seconds)
+            }
         }
-    }
 
 
-    val screens = Screen.entries
-    val navController by rememberNavController(Screen.HomeScreen.name)
-    val currentScreen by remember {
-        navController.currentScreen
-    }
-
-    MaterialTheme(
-        colors = if (isInDarkMode) {
-            darkColorPalette
-        } else {
-            lightColorPalette
+        val screens = Screen.entries
+        val navController by rememberNavController(Screen.HomeScreen.name)
+        val currentScreen by remember {
+            navController.currentScreen
         }
-    ) {
-        Scaffold {
-            Column {
-                Box(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    Row {
-                        NavigationRail(
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .width(90.dp)
-                        ) {
-                            screens.forEach {
-                                NavigationRailItem(
-                                    selected = currentScreen == it.name,
-                                    icon = {
-                                        Icon(
-                                            imageVector = it.icon,
-                                            contentDescription = it.label
-                                        )
-                                    },
-                                    label = {
-                                        Text(it.label)
-                                    },
-                                    alwaysShowLabel = true,
-                                    onClick = {
-                                        navController.navigate(it.name)
-                                    },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
+
+        MaterialTheme(
+            colors = if (isInDarkMode) {
+                darkColorPalette
+            } else {
+                lightColorPalette
+            }
+        ) {
+            Scaffold {
+                Column {
+                    Box(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Row {
+                            NavigationRail(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .width(90.dp)
+                            ) {
+                                screens.forEach {
+                                    NavigationRailItem(
+                                        selected = currentScreen == it.name,
+                                        icon = {
+                                            Icon(
+                                                imageVector = it.icon,
+                                                contentDescription = it.label
+                                            )
+                                        },
+                                        label = {
+                                            Text(it.label)
+                                        },
+                                        alwaysShowLabel = true,
+                                        onClick = {
+                                            navController.navigate(it.name)
+                                        },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                    )
+                                }
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                            ) {
+                                customNavigationHost(
+                                    navController = navController,
+                                    model = model,
+                                    handler = handler
                                 )
                             }
-                        }
-
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                        ) {
-                            customNavigationHost(
-                                navController = navController,
-                                model = model,
-                                handler = handler
-                            )
                         }
                     }
                 }
@@ -180,4 +182,35 @@ fun customNavigationHost(
             )
         }
     }.build()
+}
+
+@Composable
+fun LoadingScreen() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(48.dp),
+                color = MaterialTheme.colors.primary,
+                strokeWidth = 4.dp
+            )
+
+            Text(
+                text = "Daten werden geladen ...",
+                style = MaterialTheme.typography.h6,
+                color = MaterialTheme.colors.onSurface
+            )
+
+            Text(
+                text = "Bitte einen Moment warten.",
+                style = MaterialTheme.typography.body2,
+                color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+            )
+        }
+    }
 }
