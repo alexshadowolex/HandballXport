@@ -146,7 +146,7 @@ enum class Screen(
     ),
 
     NameNormalizerScreen(
-        label = "Namen- normalizierer",
+        label = "Namenspflege",
         icon = Icons.AutoMirrored.Filled.List
     )
 }

@@ -57,14 +57,13 @@ fun nameNormalizerScreen(nameNormalizer: NameNormalizer) {
                     .padding(15.dp)
                     .fillMaxSize()
             ) {
-                screenHeaderRow(headline = "Namennormalisierer")
+                screenHeaderRow(headline = "Team- & Hallennamen")
                 Spacer(Modifier.height(20.dp))
 
                 Text(
-                    text = "Hier können Sonderfälle definiert werden, die bei der Normalisierung der Namen von Hallen und Teams berücksichtigt werden sollen.\n" +
-                            "Bei handball.net sind alle Team- und Hallennamen komplett groß geschrieben, was mit dem Namennormalisierer für die Anzeige und den Export angepasst wird.\n" +
-                            "Dabei wird bei jedem Wort und Teilwort einfach der erste Buchstabe groß geschrieben und alle weiteren werden klein geschrieben. Neue Worte werden über Leerzeichen, Bindestriche und Klammern identifiziert.\n" +
-                            "Manche Worte sollen aber komplett groß geschrieben werden (z.B. \"HV\"), manche Worte teils groß und teils klein (z.B. \"VfB\") und manche Worte sind komplett falsch geschrieben. Diese Sonderfälle können hier definiert werden.",
+                    text = "Hier kannst du festlegen, wie Team- und Hallennamen formatiert werden, und Ausnahmen für besondere Schreibweisen definieren.\n" +
+                            "Bei handball.net werden Team- und Hallennamen vollständig in Großbuchstaben geschrieben. Für die Anzeige und den Export werden sie automatisch in eine normale Schreibweise umgewandelt: Der erste Buchstabe jedes Wortes und Teilwortes wird großgeschrieben, alle weiteren Buchstaben werden kleingeschrieben. Als Trennzeichen dienen Leerzeichen, Bindestriche und Klammern.\n" +
+                            "Manche Abkürzungen sollen jedoch vollständig großgeschrieben werden (z. B. „HV“), andere Namen haben eine besondere Groß- und Kleinschreibung (z. B. „VfB“). Außerdem können fehlerhafte Schreibweisen korrigiert werden. Solche Ausnahmen lassen sich hier individuell festlegen.",
                     style = MaterialTheme.typography.subtitle1
                 )
 

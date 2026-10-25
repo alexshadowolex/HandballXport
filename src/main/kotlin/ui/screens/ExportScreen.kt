@@ -298,7 +298,7 @@ private fun gamePlanList(
                 }
             } else {
                 // TODO: Text should change depending on if we already searched
-                Text("None")
+                Text("Keine")
             }
         }
 
