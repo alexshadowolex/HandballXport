@@ -349,6 +349,18 @@ private fun leagueList(
                     scaffoldState
                 )
 
+                if(!league.wasLeagueLoadedSuccessfully) {
+                    Row(
+                        modifier = Modifier
+                            .padding(start = 24.dp)
+                    ) {
+                        Text(
+                            text = "Liga konnte nicht geladen werden!",
+                            color = Color.Red
+                        )
+                    }
+                }
+
                 sectionDivider(thickness = 1.dp)
             }
         } else {

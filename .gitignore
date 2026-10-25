@@ -29,6 +29,8 @@ replay_pid*
 # IDEA folder
 .idea
 
+.kotlin
+
 # build folder
 build
 

@@ -10,8 +10,12 @@ import alex.handball.handler.GymHandler
 import alex.handball.json
 import alex.handball.logger
 import alex.handball.toJavaLocalDate
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import java.time.LocalDate
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
 import java.io.File
@@ -96,6 +100,8 @@ class LeaguesDatabase(private val gymHandler: GymHandler) {
 
             if (unparsedHtmlFixtures.isNotEmpty()) {
                 leaguesToUnparsedHtmlFixtures[league] = unparsedHtmlFixtures
+            } else {
+                league.wasLeagueLoadedSuccessfully = false
             }
         }
 
@@ -416,5 +422,7 @@ data class League(
     val leagueLink: String,
     val leagueName: String,
     val isNuLigaLeague: Boolean,
-    val distinguishingLeagueNameSubstring: String?
-)
+    val distinguishingLeagueNameSubstring: String?,
+) {
+    var wasLeagueLoadedSuccessfully by mutableStateOf(true)
+}
